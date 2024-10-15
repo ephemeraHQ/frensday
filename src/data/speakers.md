@@ -8,7 +8,7 @@ Biography: Researcher — Ethereum FoundationName: Stephen Ptucha
 
 Biography: Product — PayPal/VenmoName: paulio.eth
 
-Biography: Founder & CEO  — Disco.xyzName: 5pence.eth
+Biography: Founder & CEO  — 3DNSName: 5pence.eth
 
 Biography: Lead Meta-Gov Steward — ENS DAOName: Simona Pop
 

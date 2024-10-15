@@ -1,15 +1,18 @@
 import { HandlerContext, User } from "@xmtp/message-kit";
 import { textGeneration } from "../lib/openai.js";
 import fs from "fs";
-import { downloadPoapTable } from "../lib/notion.js";
 import path from "path";
 import { getBotAddress } from "../lib/bots.js";
 import { fileURLToPath } from "url";
+import { RedisClientType } from "@redis/client";
+import { getRedisClient } from "../lib/redis.js";
 const chatHistories: Record<string, any[]> = {};
+import { subscribeToNotion } from "../lib/notion.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const redisClient: RedisClientType = await getRedisClient();
 export async function agentHandler(context: HandlerContext, name: string) {
   if (!process?.env?.OPEN_AI_API_KEY) {
     console.log("No OPEN_AI_API_KEY found in .env");
@@ -114,6 +117,11 @@ async function getSystemPrompt(name: string, sender: User) {
     );
     const speakers = fs.readFileSync(speakersFilePath, "utf8");
     task = task + "\n\n" + speakers;
+
+    //Subscribe in redis
+    redisClient.set(sender.address, "subscribed");
+    //In notion
+    subscribeToNotion(sender.address, true);
   } else if (name === "lili") {
     const thailandFilePath = path.resolve(
       __dirname,
@@ -130,6 +138,6 @@ async function getSystemPrompt(name: string, sender: User) {
     `\n\n# Personality: You are ${name}\n\n` +
     personality +
     `\n\n# Task\n\n You are ${name}. ${task}`;
-
+  console.log(systemPrompt);
   return systemPrompt;
 }

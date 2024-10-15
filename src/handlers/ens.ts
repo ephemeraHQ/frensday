@@ -86,5 +86,7 @@ export async function handleEns(context: HandlerContext) {
         `Looks like ${domain} is already registered! Let's try another one`
       );
     }
+  } else {
+    context.send("Unknown command. Please try again.");
   }
 }
