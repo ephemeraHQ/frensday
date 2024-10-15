@@ -27,20 +27,18 @@ export async function startCron(
   // Ensure speakers file exists or create it for the first time
   try {
     await fs.access(SPEAKERS_FILE_PATH);
-    console.log("Speakers file already exists.");
   } catch (error) {
     console.log("Speakers file doesn't exist. Creating it for the first time.");
     await saveSpeakersToFile();
   }
-  // Cron job to fetch and save speakers once a day
-  cron.schedule("0 0 * * *", async () => {
+  // Cron job to fetch and save speakers every 10 minutes
+  cron.schedule("*/10 * * * *", async () => {
     console.log("Fetching and saving speakers");
     await saveSpeakersToFile();
   });
-
-  // Existing cron job to send updates every 50 minutes
+  // Cron job to send updates once a day at midnight UTC
   cron.schedule(
-    "*/50 * * * *",
+    "0 0 * * *",
     async () => {
       const keys = await redisClient.keys("*");
       console.log(`Running task. ${keys.length} subscribers.`);

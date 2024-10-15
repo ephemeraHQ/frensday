@@ -31,6 +31,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
       chatHistories[historyKey]
     );
     console.log("reply", reply);
+
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
     const messages = reply
       .split("\n")
@@ -130,6 +131,5 @@ async function getSystemPrompt(name: string, sender: User) {
     personality +
     `\n\n# Task\n\n You are ${name}. ${task}`;
 
-  console.log(systemPrompt);
   return systemPrompt;
 }

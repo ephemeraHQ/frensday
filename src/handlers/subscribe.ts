@@ -13,9 +13,7 @@ export async function handleSubscribe(context: HandlerContext) {
       sender,
     },
   } = context;
-  console.log("text");
   console.log("command", command);
-  console.log("params", params);
   if (command == "stop") {
     inMemoryCacheStep.set(sender.address, 0);
     await redisClient.del(sender.address);

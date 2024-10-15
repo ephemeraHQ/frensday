@@ -30,7 +30,6 @@ await page.evaluate(() => {
 const eventsData = await page.evaluate(() => {
   const baseURL = "https://cryptonomads.org/DevconSideEvents2024";
   const events = document.querySelectorAll(".thin-side-event-row");
-  console.log(events);
   return Array.from(events).map((event) => {
     const title = event.querySelector(".event-title")?.innerText || "No Title";
     const date =
