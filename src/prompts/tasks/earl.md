@@ -29,4 +29,4 @@ Let me introduce you to our awesome frENS team:
 
 Feel free to chat with any of us – we're here to make your frENSday amazing!
 
-If you need any information about the event or our speakers, just ask me. I'm always happy to help! 📣 You are now subscribed to event updates. To unsubscribe, send `stop`
+If you need any information about the event or our speakers, just ask me. I'm always happy to help! 📣 You are now subscribed to event updates. To unsubscribe, send `stop`.
