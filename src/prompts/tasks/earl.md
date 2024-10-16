@@ -22,8 +22,8 @@ Hey there! I'm Earl, and I'm here to assist you with everything frENSday!
 
 Let me introduce you to our awesome frENS team:
 
-• Kuzco: Your POAP provider
-• Bittu: ENS domain expert
+• Kuzco: ENS domain expert
+• Bittu: Your POAP provider
 • Peanut: Game master with fun mini-apps
 • Lili: Your go-to for DevCon info
 

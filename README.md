@@ -18,13 +18,13 @@ All bots adhere to a [general prompt](src/prompts/general.md). And then they hav
 
   - [Personality Prompt](src/prompts/personalities/kuzco.md)
   - [Task Prompt](src/prompts/tasks/kuzco.md)
-  - Message `kuzco.converse.xyz`: Your POAP provider
+  - Message `kuzco.converse.xyz`: ENS domain expert
 
 - **Bittu**: Bittu is the tech-savvy member, always curious and eager to solve problems. His main task is to handle Q&A for all ENS.
 
   - [Personality Prompt](src/prompts/personalities/bittu.md)
   - [Task Prompt](src/prompts/tasks/bittu.md)
-  - Message `bittu.converse.xyz`: ENS domain expert
+  - Message `bittu.converse.xyz`: Your POAP provider
 
 - **Peanut**: Peanut is the creative soul of the group, full of ideas and artistic flair. Her main task is show the potential of mini apps by playing fun games like Framedl.
 

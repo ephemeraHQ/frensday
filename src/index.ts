@@ -1,5 +1,4 @@
 import { mainHandler } from "./handlers/main.js";
-import { commands } from "./commands.js";
 
 // App configuration
 const appConfig_KUZCO = {

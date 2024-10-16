@@ -10,13 +10,13 @@ Biography: Product — PayPal/VenmoName: paulio.eth
 
 Biography: Founder & CEO  — 3DNSName: 5pence.eth
 
-Biography: Lead Meta-Gov Steward — ENS DAOName: Simona Pop
+Biography: Meta-Governance Working Group Lead Steward — ENS DAOName: Simona Pop
 
-Biography: Lead Public Goods Steward — ENS DAOName: Medha Kothari
+Biography: Public Goods Working Group Lead Steward — ENS DAOName: Medha Kothari
 
 Biography: Product Manager — Uniswap LabsName: slobo.eth
 
-Biography: Founder — NameStoneName: evin.eth
+Biography: Founder — NameStone & Ecosystem Working Group Lead Steward — ENS DAOName: evin.eth
 
 Biography: Founder — Disco.xyzName: josh.box
 
