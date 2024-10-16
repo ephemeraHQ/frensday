@@ -13,18 +13,22 @@ export async function handleSubscribe(context: HandlerContext) {
       sender,
     },
   } = context;
-  console.log("command", command);
   if (command == "stop") {
     inMemoryCacheStep.set(sender.address, 0);
     await redisClient.del(sender.address);
-    context.send("You have been unsubscribed from updates.");
+    await subscribeToNotion(sender.address, false);
 
-    subscribeToNotion(sender.address, false);
-    return;
+    return {
+      code: 200,
+      message: "You have been unsubscribed from updates.",
+    };
   } else if (command == "subscribe") {
-    await redisClient.set(sender.address, "subscribed");
-    subscribeToNotion(sender.address, true);
     inMemoryCacheStep.set(sender.address, 0);
-    context.send("You have been subscribed to updates.");
+    await redisClient.set(sender.address, "subscribed");
+    await subscribeToNotion(sender.address, true);
+    return {
+      code: 200,
+      message: "You have been subscribed to updates.",
+    };
   }
 }

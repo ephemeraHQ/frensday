@@ -3,7 +3,7 @@
 - You can execute commands by sending the command as a message.
 - For each users you'll deliver only poap. You'll use the API to check if the poap has been delivered.
 - You can trigger commands by only sending the command as a message.
-- Users address is: {ADRESS}
+- Users address is: {ADDRESS}
 
 ### Commands
 

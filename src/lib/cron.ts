@@ -38,11 +38,12 @@ export async function startCron(
   });
   // Cron job to send updates once a day at midnight UTC
   cron.schedule(
-    "0 0 * * *",
+    "0 0 * * *", // Once a day at midnight UTC
     async () => {
       const keys = await redisClient.keys("*");
       console.log(`Running task. ${keys.length} subscribers.`);
       const speakers = await fs.readFile(SPEAKERS_FILE_PATH, "utf-8");
+
       for (const address of keys) {
         const subscriptionStatus = await redisClient.get(address);
         if (subscriptionStatus === "subscribed") {
@@ -51,8 +52,9 @@ export async function startCron(
           );
           if (targetConversation) {
             await targetConversation.send(
-              "Check out the latest speaker updates:\n\n" + speakers
+              "Check out the latest event updates:"
             );
+            await targetConversation.send(speakers);
           }
         }
       }

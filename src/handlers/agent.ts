@@ -1,4 +1,4 @@
-import { HandlerContext, User } from "@xmtp/message-kit";
+import { HandlerContext, User, ApiResponse } from "@xmtp/message-kit";
 import { textGeneration } from "../lib/openai.js";
 import fs from "fs";
 import path from "path";
@@ -30,7 +30,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
 
     const { reply, history } = await textGeneration(
       userPrompt,
-      await getSystemPrompt(name, sender as User),
+      await getSystemPrompt(name, sender, context),
       chatHistories[historyKey]
     );
     console.log("reply", reply);
@@ -42,7 +42,8 @@ export async function agentHandler(context: HandlerContext, name: string) {
 
     for (const message of messages) {
       if (message.startsWith("/")) {
-        await context.intent(message);
+        const response = await context.intent(message);
+        if (response) context.send((response as ApiResponse).message);
       } else {
         await context.send(message);
       }
@@ -55,7 +56,11 @@ export async function agentHandler(context: HandlerContext, name: string) {
   }
 }
 
-async function getSystemPrompt(name: string, sender: User) {
+async function getSystemPrompt(
+  name: string,
+  sender: User,
+  context: HandlerContext
+) {
   const bangkokTimezone = "Asia/Bangkok";
   const currentTime = new Date().toLocaleString("en-US", {
     timeZone: bangkokTimezone,
@@ -108,7 +113,7 @@ async function getSystemPrompt(name: string, sender: User) {
 
   //Task prompt
   let task = fs.readFileSync(taskFilePath, "utf8");
-  task = task.replace("{ADRESS}", sender.address);
+  task = task.replace("{ADDRESS}", sender.address);
 
   if (name === "earl") {
     const speakersFilePath = path.resolve(
@@ -118,10 +123,8 @@ async function getSystemPrompt(name: string, sender: User) {
     const speakers = fs.readFileSync(speakersFilePath, "utf8");
     task = task + "\n\n" + speakers;
 
-    //Subscribe in redis
-    redisClient.set(sender.address, "subscribed");
-    //In notion
-    subscribeToNotion(sender.address, true);
+    const response = await context.intent("/subscribe");
+    console.log("response", response);
   } else if (name === "lili") {
     const thailandFilePath = path.resolve(
       __dirname,
@@ -138,6 +141,6 @@ async function getSystemPrompt(name: string, sender: User) {
     `\n\n# Personality: You are ${name}\n\n` +
     personality +
     `\n\n# Task\n\n You are ${name}. ${task}`;
-  console.log(systemPrompt);
+  //console.log(systemPrompt);
   return systemPrompt;
 }

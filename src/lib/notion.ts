@@ -21,28 +21,64 @@ export async function downloadPoapTable() {
   return poapTable as { url: string; address: string; id: string }[];
 }
 export async function subscribeToNotion(address: string, subscribed: boolean) {
-  const page = await notion.pages.create({
-    parent: {
-      database_id: subscribedID as string,
-    },
-    properties: {
-      Address: {
-        type: "title",
-        title: [
-          {
-            text: { content: address },
-          },
-        ],
-      },
-      Status: {
-        type: "select",
-        select: {
-          name: subscribed ? "✅" : "❌",
-        },
+  // Check if the address already exists in the database
+  const existingPages = await notion.databases.query({
+    database_id: subscribedID as string,
+    filter: {
+      property: "Address",
+      title: {
+        equals: address,
       },
     },
   });
-  return page.id;
+
+  if (existingPages?.results?.length > 0) {
+    const existingPage = existingPages.results[0];
+
+    // @ts-ignore
+    const currentStatus = existingPage?.properties?.Status?.select?.name;
+    const newStatus = subscribed ? "Subscribed" : "Unsubscribed";
+
+    // Only update if the status has changed
+    if (currentStatus !== newStatus) {
+      await notion.pages.update({
+        page_id: existingPage.id,
+        properties: {
+          Status: {
+            type: "select",
+            select: {
+              name: newStatus,
+            },
+          },
+        },
+      });
+    }
+    return existingPage.id;
+  } else {
+    // If the address doesn't exist, create a new page
+    const page = await notion.pages.create({
+      parent: {
+        database_id: subscribedID as string,
+      },
+      properties: {
+        Address: {
+          type: "title",
+          title: [
+            {
+              text: { content: address },
+            },
+          ],
+        },
+        Status: {
+          type: "select",
+          select: {
+            name: subscribed ? "Subscribed" : "Unsubscribed",
+          },
+        },
+      },
+    });
+    return page.id;
+  }
 }
 
 export async function updatePoapAddress(dbRowId: string, address: string) {

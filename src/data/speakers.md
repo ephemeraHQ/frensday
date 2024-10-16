@@ -1,23 +1,25 @@
-# Event Speakers:
+Nick Johnson - Lead Developer — ENS Labs
 
-Name: Nick Johnson
+Vitalik Buterin - Researcher — Ethereum Foundation
 
-Biography: Lead Developer — ENS LabsName: Vitalik Buterin
+Stephen Ptucha - Product — PayPal/Venmo
 
-Biography: Researcher — Ethereum FoundationName: Stephen Ptucha
+paulio.eth - Founder & CEO  — 3DNS
 
-Biography: Product — PayPal/VenmoName: paulio.eth
+5pence.eth - Lead Steward — ENS DAO Meta-Governance Working Group
 
-Biography: Founder & CEO  — 3DNSName: 5pence.eth
+Simona Pop - Lead Steward — ENS DAO Public Goods Working Group
 
-Biography: Meta-Governance Working Group Lead Steward — ENS DAOName: Simona Pop
+Medha Kothari - Product Manager — Uniswap Labs
 
-Biography: Public Goods Working Group Lead Steward — ENS DAOName: Medha Kothari
+slobo.eth - Founder — NameStone, & Lead Steward — ENS DAO Ecosystem Working Group
 
-Biography: Product Manager — Uniswap LabsName: slobo.eth
+evin.eth - Founder — Disco.xyz
 
-Biography: Founder — NameStone & Ecosystem Working Group Lead Steward — ENS DAOName: evin.eth
+Moises E. Jaramillo - Principal Engineer — Dentity
 
-Biography: Founder — Disco.xyzName: josh.box
+josh.box - President / Founder — Intercap / Box Domains
 
-Biography: President / Founder — Intercap / Box Domains
+Devan Mitchem - Global Product & Partnerships — Google Web3
+
+Tascha - Founder & CEO — INFINIT

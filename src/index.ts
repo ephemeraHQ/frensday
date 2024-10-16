@@ -23,14 +23,6 @@ const appConfig_BITTU = {
 };
 
 Promise.all([
-  console.log(
-    "Starting bots",
-    appConfig_KUZCO.name,
-    appConfig_PEANUT.name,
-    appConfig_LILI.name,
-    appConfig_EARL.name,
-    appConfig_BITTU.name
-  ),
   await mainHandler(appConfig_KUZCO, appConfig_KUZCO.name),
   await mainHandler(appConfig_PEANUT, appConfig_PEANUT.name),
   await mainHandler(appConfig_LILI, appConfig_LILI.name),
