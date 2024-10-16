@@ -8,7 +8,7 @@ Each character in Frens Day has a unique personality and a main task they are re
 
 All bots adhere to a [general prompt](src/prompts/general.md). And then they have specific character prompts.
 
-- **Earl**: With a calm and collected demeanor, Earl is the strategist
+- **Earl**: With a calm and collected demeanor, Earl is the strategist.
 
   - [Personality Prompt](src/prompts/personalities/earl.md)
   - [Task Prompt](src/prompts/tasks/earl.md)
