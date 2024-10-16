@@ -1,4 +1,4 @@
-# frENSDay Character Bots 🤖
+# frENSDay Character Bots
 
 ![](/banner.png)
 
