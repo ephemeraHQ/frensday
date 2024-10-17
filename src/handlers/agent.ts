@@ -25,6 +25,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
   } = context;
 
   try {
+    console.log("sender", sender);
     const { content: userPrompt } = content;
     const historyKey = `${name}:${sender.address}`;
 
@@ -33,7 +34,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
       await getSystemPrompt(name, sender),
       chatHistories[historyKey]
     );
-    console.log("reply", reply);
+    console.log("reply", reply, history);
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
     const messages = reply
@@ -79,24 +80,25 @@ async function getSystemPrompt(name: string, sender: User) {
   task = task.replace("{ADDRESS}", sender.address);
 
   //Specific data
+
   if (name === "earl") {
     const speakers = fs.readFileSync(
       path.resolve(__dirname, "../../src/data/speakers.md"),
       "utf8"
     );
 
-    task = task + "\n\n" + speakers;
+    task = task + "\n\n### Speakers\n\n" + speakers;
   } else if (name === "lili") {
     const thailand = fs.readFileSync(
       path.resolve(__dirname, "../../src/data/thailand.csv"),
       "utf8"
     );
-    task = task + "\n\n" + thailand;
+    task = task + "\n\n### Thailand\n\n" + thailand;
   }
 
   //Putting it all together
+
   const systemPrompt =
-    `# Rules\n\n` +
     generalPrompt +
     `\n\n# Personality: You are ${name}\n\n` +
     personality +
