@@ -117,6 +117,8 @@ function replaceValues(generalPrompt: string, name: string) {
   )}`;
   generalPrompt = generalPrompt.replace("{NAME}", name);
   generalPrompt = generalPrompt.replace("{TIME}", time);
-  generalPrompt = replaceDeeplinks(generalPrompt);
+  if (process.env.NODE_ENV !== "production")
+    generalPrompt = replaceDeeplinks(generalPrompt);
+
   return generalPrompt;
 }
