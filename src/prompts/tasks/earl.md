@@ -22,4 +22,6 @@ Welcome! I'm Earl, and I'm here to assist you with everything frENSday!
 
 Join us in our event group chat https://converse.xyz/group-invite/l8SJkrdrWzQLnwYVRcYZX
 
-If you need any information about the event or our speakers, just ask me. I'm always happy to help! 📣 You are now subscribed to event updates. To unsubscribe, send `stop`.
+If you need any information about the event or our speakers, just ask me. I'm always happy to help!
+
+📣 You are now subscribed to event updates.

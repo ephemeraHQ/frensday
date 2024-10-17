@@ -52,3 +52,27 @@ export async function isBot(address: string) {
     (bot) => bot.address.toLowerCase() === address.toLowerCase()
   );
 }
+
+export function replaceDeeplinks(generalPrompt: string) {
+  generalPrompt = generalPrompt.replace(
+    "kuzco.frens.eth",
+    getBotAddress("kuzco") || ""
+  );
+  generalPrompt = generalPrompt.replace(
+    "lili.frens.eth",
+    getBotAddress("lili") || ""
+  );
+  generalPrompt = generalPrompt.replace(
+    "peanut.frens.eth",
+    getBotAddress("peanut") || ""
+  );
+  generalPrompt = generalPrompt.replace(
+    "bittu.frens.eth",
+    getBotAddress("bittu") || ""
+  );
+  generalPrompt = generalPrompt.replace(
+    "earl.frens.eth",
+    getBotAddress("earl") || ""
+  );
+  return generalPrompt;
+}

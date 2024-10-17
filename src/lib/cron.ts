@@ -55,6 +55,12 @@ export async function startCron(
               "Check out the latest event updates:"
             );
             await targetConversation.send(speakers);
+            await targetConversation.send(
+              "If you need any information about the event or our speakers, just ask me. I'm always happy to help!"
+            );
+            await targetConversation.send(
+              "To unsubscribe, just tell me to stop."
+            );
           }
         }
       }

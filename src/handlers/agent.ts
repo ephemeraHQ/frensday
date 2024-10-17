@@ -1,8 +1,8 @@
-import { HandlerContext, User, ApiResponse } from "@xmtp/message-kit";
+import { HandlerContext, User } from "@xmtp/message-kit";
 import { textGeneration } from "../lib/openai.js";
 import fs from "fs";
 import path from "path";
-import { getBotAddress } from "../lib/bots.js";
+import { replaceDeeplinks } from "../lib/bots.js";
 import { fileURLToPath } from "url";
 import { RedisClientType } from "@redis/client";
 import { getRedisClient } from "../lib/redis.js";
@@ -30,7 +30,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
 
     const { reply, history } = await textGeneration(
       userPrompt,
-      await getSystemPrompt(name, sender, context),
+      await getSystemPrompt(name, sender),
       chatHistories[historyKey]
     );
     console.log("reply", reply);
@@ -43,7 +43,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
     for (const message of messages) {
       if (message.startsWith("/")) {
         const response = await context.intent(message);
-        if (response) context.send((response as ApiResponse).message);
+        if (response && response.message) await context.send(response.message);
       } else {
         await context.send(message);
       }
@@ -56,22 +56,60 @@ export async function agentHandler(context: HandlerContext, name: string) {
   }
 }
 
-async function getSystemPrompt(
-  name: string,
-  sender: User,
-  context: HandlerContext
-) {
+async function getSystemPrompt(name: string, sender: User) {
+  //General prompt
+  let generalPrompt = fs.readFileSync(
+    path.resolve(__dirname, `../../src/prompts/general.md`),
+    "utf8"
+  );
+  //Personality prompt
+  const personality = fs.readFileSync(
+    path.resolve(__dirname, `../../src/prompts/personalities/${name}.md`),
+    "utf8"
+  );
+
+  //Task prompt
+  let task = fs.readFileSync(
+    path.resolve(__dirname, `../../src/prompts/tasks/${name}.md`),
+    "utf8"
+  );
+
+  //Modify prompt
+  generalPrompt = replaceValues(generalPrompt, name);
+  task = task.replace("{ADDRESS}", sender.address);
+
+  //Specific data
+  if (name === "earl") {
+    const speakers = fs.readFileSync(
+      path.resolve(__dirname, "../../src/data/speakers.md"),
+      "utf8"
+    );
+
+    task = task + "\n\n" + speakers;
+  } else if (name === "lili") {
+    const thailand = fs.readFileSync(
+      path.resolve(__dirname, "../../src/data/thailand.csv"),
+      "utf8"
+    );
+    task = task + "\n\n" + thailand;
+  }
+
+  //Putting it all together
+  const systemPrompt =
+    `# Rules\n\n` +
+    generalPrompt +
+    `\n\n# Personality: You are ${name}\n\n` +
+    personality +
+    `\n\n# Task\n\n You are ${name}. ${task}`;
+  return systemPrompt;
+}
+
+function replaceValues(generalPrompt: string, name: string) {
   const bangkokTimezone = "Asia/Bangkok";
   const currentTime = new Date().toLocaleString("en-US", {
     timeZone: bangkokTimezone,
   });
 
-  //General prompt
-  const generalFilePath = path.resolve(
-    __dirname,
-    `../../src/prompts/general.md`
-  );
-  let generalPrompt = fs.readFileSync(generalFilePath, "utf8");
   const time = `Current time in Bangkok: ${currentTime} - ${new Date().toLocaleDateString(
     "en-US",
     {
@@ -80,67 +118,6 @@ async function getSystemPrompt(
   )}`;
   generalPrompt = generalPrompt.replace("{NAME}", name);
   generalPrompt = generalPrompt.replace("{TIME}", time);
-  generalPrompt = generalPrompt.replace(
-    "kuzco.frens.eth",
-    getBotAddress("kuzco") || ""
-  );
-  generalPrompt = generalPrompt.replace(
-    "lili.frens.eth",
-    getBotAddress("lili") || ""
-  );
-  generalPrompt = generalPrompt.replace(
-    "peanut.frens.eth",
-    getBotAddress("peanut") || ""
-  );
-  generalPrompt = generalPrompt.replace(
-    "bittu.frens.eth",
-    getBotAddress("bittu") || ""
-  );
-  generalPrompt = generalPrompt.replace(
-    "earl.frens.eth",
-    getBotAddress("earl") || ""
-  );
-  //Personality prompt
-  const personalityFilePath = path.resolve(
-    __dirname,
-    `../../src/prompts/personalities/${name}.md`
-  );
-  const personality = fs.readFileSync(personalityFilePath, "utf8");
-  const taskFilePath = path.resolve(
-    __dirname,
-    `../../src/prompts/tasks/${name}.md`
-  );
-
-  //Task prompt
-  let task = fs.readFileSync(taskFilePath, "utf8");
-  task = task.replace("{ADDRESS}", sender.address);
-
-  if (name === "earl") {
-    const speakersFilePath = path.resolve(
-      __dirname,
-      "../../src/data/speakers.md"
-    );
-    const speakers = fs.readFileSync(speakersFilePath, "utf8");
-    task = task + "\n\n" + speakers;
-
-    const response = await context.intent("/subscribe");
-    console.log("response", response);
-  } else if (name === "lili") {
-    const thailandFilePath = path.resolve(
-      __dirname,
-      "../../src/data/thailand.csv"
-    );
-    const thailand = fs.readFileSync(thailandFilePath, "utf8");
-    task = task + "\n\n" + thailand;
-  }
-
-  //System prompt
-  const systemPrompt =
-    `# Rules\n\n` +
-    generalPrompt +
-    `\n\n# Personality: You are ${name}\n\n` +
-    personality +
-    `\n\n# Task\n\n You are ${name}. ${task}`;
-  //console.log(systemPrompt);
-  return systemPrompt;
+  generalPrompt = replaceDeeplinks(generalPrompt);
+  return generalPrompt;
 }
