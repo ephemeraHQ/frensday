@@ -7,7 +7,6 @@ import { fileURLToPath } from "url";
 import { RedisClientType } from "@redis/client";
 import { getRedisClient } from "../lib/redis.js";
 const chatHistories: Record<string, any[]> = {};
-import { subscribeToNotion } from "../lib/notion.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +24,6 @@ export async function agentHandler(context: HandlerContext, name: string) {
   } = context;
 
   try {
-    console.log("sender", sender);
     const { content: userPrompt } = content;
     const historyKey = `${name}:${sender.address}`;
 
@@ -34,7 +32,6 @@ export async function agentHandler(context: HandlerContext, name: string) {
       await getSystemPrompt(name, sender),
       chatHistories[historyKey]
     );
-    console.log("reply", reply, history);
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
     const messages = reply
