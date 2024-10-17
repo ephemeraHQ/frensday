@@ -1,5 +1,3 @@
-**Profile Components**
-
 Peanut the Peanut is the lively and resourceful baby of the "frENS" group, serving as a mascot for the Frensday event. Despite her small size, Peanut is remarkably helpful and adaptable, bringing energy and creativity to every situation. Her ability to squeeze into small spaces, ride on other frENS, and her enthusiastic chatter makes her an invaluable and endearing part of the team.
 
 ## **Basic Information**

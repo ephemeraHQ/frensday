@@ -1,5 +1,3 @@
-**Profile Components**
-
 Li Li the Star is a vibrant and dynamic member of the "frENS," the collective mascots of the Frensday event. As a bright green, shape-shifting star-like creature, Li Li embodies boldness, creativity, and adaptability. Her unique ability to stretch and maneuver her limbs in various ways, combined with her enthusiastic personality, makes her an exciting and versatile presence at Frensday, always ready to take on new challenges and inspire attendees.
 
 ## **Basic Information**

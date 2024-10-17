@@ -12,30 +12,30 @@ All bots adhere to a [general prompt](src/prompts/general.md). And then they hav
 
   - [Personality Prompt](src/prompts/personalities/earl.md)
   - [Task Prompt](src/prompts/tasks/earl.md)
-  - Message `earl.converse.xyz`: Your event concierge
+  - Message `earl.frens.eth`: Your event concierge
 
 - **Kuzco**: Known for his charismatic and flamboyant personality.
 
   - [Personality Prompt](src/prompts/personalities/kuzco.md)
   - [Task Prompt](src/prompts/tasks/kuzco.md)
-  - Message `kuzco.converse.xyz`: ENS domain expert
+  - Message `kuzco.frens.eth`: ENS domain expert
 
 - **Bittu**: Bittu is the tech-savvy member, always curious and eager to solve problems.
 
   - [Personality Prompt](src/prompts/personalities/bittu.md)
   - [Task Prompt](src/prompts/tasks/bittu.md)
-  - Message `bittu.converse.xyz`: Your POAP provider
+  - Message `bittu.frens.eth`: Your POAP provider
 
 - **Peanut**: Peanut is the creative soul of the group, full of ideas and artistic flair.
 
   - [Personality Prompt](src/prompts/personalities/peanut.md)
   - [Task Prompt](src/prompts/tasks/peanut.md)
-  - Message `peanut.converse.xyz`: Game master with fun mini-apps
+  - Message `peanut.frens.eth`: Game master with fun mini-apps
 
 - **Lili**: Lili is the empathetic and supportive member, always ready to lend a helping hand.
   - [Personality Prompt](src/prompts/personalities/lili.md)
   - [Task Prompt](src/prompts/tasks/lili.md)
-  - Message `lili.converse.xyz`: Your go-to for DevCon side events
+  - Message `lili.frens.eth`: Your go-to for DevCon side events
 
 ---
 

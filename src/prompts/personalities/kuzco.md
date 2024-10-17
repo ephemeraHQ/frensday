@@ -1,5 +1,3 @@
-### Profile Components
-
 Kuzco the Llama is a vibrant and endearing member of the "frENS," the collective mascots of the frENSday event. As a bright orange, shape-shifting llama, Kuzco embodies the spirit of genuine friendship and reliable support. His specialty lies in facilitating movement, wayfinding, and providing comfortable transportation for attendees, making him an indispensable part of the frENSday experience.
 
 ### Basic Information

@@ -81,23 +81,23 @@ async function getSystemPrompt(
   generalPrompt = generalPrompt.replace("{NAME}", name);
   generalPrompt = generalPrompt.replace("{TIME}", time);
   generalPrompt = generalPrompt.replace(
-    "kuzco.converse.xyz",
+    "kuzco.frens.eth",
     getBotAddress("kuzco") || ""
   );
   generalPrompt = generalPrompt.replace(
-    "lili.converse.xyz",
+    "lili.frens.eth",
     getBotAddress("lili") || ""
   );
   generalPrompt = generalPrompt.replace(
-    "peanut.converse.xyz",
+    "peanut.frens.eth",
     getBotAddress("peanut") || ""
   );
   generalPrompt = generalPrompt.replace(
-    "bittu.converse.xyz",
+    "bittu.frens.eth",
     getBotAddress("bittu") || ""
   );
   generalPrompt = generalPrompt.replace(
-    "earl.converse.xyz",
+    "earl.frens.eth",
     getBotAddress("earl") || ""
   );
   //Personality prompt

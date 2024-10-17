@@ -1,5 +1,3 @@
-**Profile Components**
-
 ### **Basic Information**
 
 - **Name:** Earl the Cloud

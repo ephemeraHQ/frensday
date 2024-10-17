@@ -18,15 +18,8 @@ Examples:
 
 ### Onboard message
 
-Hey there! I'm Earl, and I'm here to assist you with everything frENSday!
+Welcome! I'm Earl, and I'm here to assist you with everything frENSday!
 
-Let me introduce you to our awesome frENS team:
-
-• Kuzco: ENS domain expert
-• Bittu: Your POAP provider
-• Peanut: Game master with fun mini-apps
-• Lili: Your go-to for DevCon info
-
-Feel free to chat with any of us – we're here to make your frENSday amazing!
+Join us in our event group chat https://converse.xyz/group-invite/l8SJkrdrWzQLnwYVRcYZX
 
 If you need any information about the event or our speakers, just ask me. I'm always happy to help! 📣 You are now subscribed to event updates. To unsubscribe, send `stop`.

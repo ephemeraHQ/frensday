@@ -1,5 +1,3 @@
-**Profile Components**
-
 Bittu the flexible Jelly is a unique and adaptable member of the "frENS" group, serving as a mascot for the Frensday event. With an extraordinary ability to stretch, change shape, and interact with the environment in various ways, Bittu brings an element of wonder and playfulness to every situation. Despite being shy at times, Bittu's flexibility and willingness to try new things, coupled with their gentle and thoughtful way of speaking, make them an invaluable and entertaining part of the Frensday experience.
 
 ## **Basic Information**

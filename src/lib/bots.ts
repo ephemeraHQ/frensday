@@ -28,7 +28,7 @@ export const getBotAddress = (name: string) => {
       (bot) => bot.name.toLowerCase() === name.toLowerCase()
     )?.address;
   }
-  return null;
+  return "";
 };
 
 export const botLocalAddresses = [
