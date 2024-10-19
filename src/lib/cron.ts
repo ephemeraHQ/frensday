@@ -33,6 +33,11 @@ export async function startCron(v2client: Client) {
     console.log("Fetching and saving speakers");
     await saveSpeakersToFile();
   });
+  await db.read();
+  const subscribers = db.data.subscribers;
+  console.log(
+    `Cron job to fetch and save speakers every 10 minutes and send updates to ${subscribers.length} subscribers`
+  );
   // Cron job to send updates once a day at midnight UTC
   cron.schedule(
     "0 0 * * *", // Once a day at midnight UTC
