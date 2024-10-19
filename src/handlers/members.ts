@@ -49,11 +49,15 @@ export async function handleMembers(context: HandlerContext) {
         (s) => s.address !== sender.address
       );
       await db.write();
-    }
 
+      return {
+        code: 200,
+        message: "You have been removed to the group",
+      };
+    }
     return {
-      code: 200,
-      message: "You have been removed to the group",
+      code: 400,
+      message: "Your removal request has been denied",
     };
   }
 }
