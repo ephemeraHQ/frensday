@@ -37,6 +37,7 @@ export async function mainHandler(appConfig: Config, name: string) {
       //remove from group
       const response = await context.intent("/remove");
       const response2 = await context.intent("/unsubscribe");
+      console.log(response, response2);
       if (response && response.message) context.send(response.message);
       if (response2 && response2.message) context.send(response2.message);
 
