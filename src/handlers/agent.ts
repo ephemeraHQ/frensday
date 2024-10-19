@@ -1,10 +1,14 @@
-import { HandlerContext, User } from "@xmtp/message-kit";
+import { HandlerContext, User, xmtpClient } from "@xmtp/message-kit";
 import { textGeneration } from "../lib/openai.js";
 import fs from "fs";
 import path from "path";
 import { replaceDeeplinks } from "../lib/bots.js";
 import { fileURLToPath } from "url";
 let chatHistories: Record<string, any[]> = {};
+
+const { v2client: bittu } = await xmtpClient({
+  privateKey: process.env.KEY_BITTU,
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -169,13 +173,17 @@ Join us in our event group chat: https://bit.ly/frensday
 
 If you need any information about the event or our speakers, just ask me. I'm always happy to help!`
           );
-          console.log("Subscribing");
           const response = await context.intent("/subscribe");
           context.send(response?.message ?? "");
           context.send(
             "psst... by the way, check with Bittu for a exclusive POAP 😉"
           );
+          console.log(`User added: ${sender.address}`);
 
+          const conv = await bittu.conversations.newConversation(
+            sender.address
+          );
+          await conv.send("psst, do you want a exclusive POAP?");
           return true;
         }
       }

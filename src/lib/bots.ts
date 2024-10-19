@@ -46,7 +46,7 @@ export const botAddresses = [
   { name: "peanut", address: "0xc143D1b3a0Fe554dF36FbA0681f9086cf2640560" },
 ];
 
-export async function isBot(address: string) {
+export function isBot(address: string) {
   const addressList = isDeployed ? botAddresses : botLocalAddresses;
   return addressList.some(
     (bot) => bot.address.toLowerCase() === address.toLowerCase()

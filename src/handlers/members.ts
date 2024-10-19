@@ -17,7 +17,7 @@ export async function handleMembers(context: HandlerContext) {
     return;
   } else if (command == "add") {
     await db.read();
-    const subscriberExists = db.data.subscribers.find(
+    const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
     );
     if (!subscriberExists) {
@@ -37,7 +37,7 @@ export async function handleMembers(context: HandlerContext) {
     };
   } else if (command == "remove") {
     await db.read();
-    const subscriberExists = db.data.subscribers.find(
+    const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
     );
     if (subscriberExists) {
@@ -53,7 +53,7 @@ export async function handleMembers(context: HandlerContext) {
       if (member)
         await conversation?.removeMembers([member.accountAddresses[0]]);
 
-      db.data.subscribers = db.data.subscribers.filter(
+      db.data.subscribers = db?.data?.subscribers?.filter(
         (s) => s.address !== sender.address
       );
       await db.write();
@@ -68,7 +68,7 @@ export async function handleMembers(context: HandlerContext) {
       message: "Your removal request has been denied",
     };
   } else if (command == "exists") {
-    const subscribers = db.data.subscribers;
+    const subscribers = db?.data?.subscribers;
     const subscriber = subscribers?.find((s) => s.address === params.address);
     if (subscriber) {
       return {

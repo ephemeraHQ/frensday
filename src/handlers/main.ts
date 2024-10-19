@@ -4,14 +4,10 @@ import { run } from "@xmtp/message-kit";
 import { startCron } from "../lib/cron.js";
 import { xmtpClient } from "@xmtp/message-kit";
 import { isBot, isReplyFromBot, getBotAddress } from "../lib/bots.js";
-import { RedisClientType } from "@redis/client";
 import { clearChatHistory } from "./agent.js";
 
 const stopWords = ["cancel", "reset", "stop"];
 
-const { v2client: bittu } = await xmtpClient({
-  privateKey: process.env.KEY_BITTU,
-});
 const { v2client: earl } = await xmtpClient({
   privateKey: process.env.KEY_EARL,
 });
@@ -34,25 +30,19 @@ export async function mainHandler(appConfig: Config) {
       version,
       getReplyChain,
     } = context;
-    const isBotBool = await isBot(sender.address);
-    if (isBotBool) return; //return if its bot
-    console.log(typeId);
+
+    if (isBot(sender.address)) return;
     if (typeId === "group_updated" && name == "bittu") {
       const { addedInboxes } = context.message.content;
-      console.log(addedInboxes);
       if (addedInboxes.length === 1) {
         const addedMember = await members?.find(
           (member: any) => member.inboxId === addedInboxes[0]?.inboxId
         );
-        console.log(addedMember);
         if (addedMember) {
           console.log(addedMember);
-          group.send("Welcome to the group!");
-          console.log(`User added: ${addedMember?.address}`);
-          const conv = await bittu.conversations.newConversation(
-            addedMember.address
+          group.send(
+            "Welcome to the group!" + addedMember?.address.slice(0, 4) + "..."
           );
-          await conv.send("psst, do you want a exclusive POAP?");
         }
       }
 

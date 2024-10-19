@@ -43,9 +43,9 @@ export async function startCron(v2client: Client) {
     "0 0 * * *", // Once a day at midnight UTC
     async () => {
       await db.read();
-      const subscribers = db.data.subscribers;
+      const subscribers = db?.data?.subscribers;
 
-      console.log(`Running task. ${subscribers.length} subscribers.`);
+      console.log(`Running task. ${subscribers?.length} subscribers.`);
       const speakers = await fs.readFile(SPEAKERS_FILE_PATH, "utf-8");
 
       for (const subscriber of subscribers) {

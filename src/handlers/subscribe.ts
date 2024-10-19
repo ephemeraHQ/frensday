@@ -10,8 +10,8 @@ export async function handleSubscribe(context: HandlerContext) {
   } = context;
   await db.read();
   if (command == "unsubscribe") {
-    const subscribers = db.data.subscribers;
-    const subscriber = subscribers.find((s) => s.address === sender.address);
+    const subscribers = db?.data?.subscribers;
+    const subscriber = subscribers?.find((s) => s.address === sender.address);
     if (subscriber) {
       subscriber.status = "unsubscribed";
     }
@@ -27,7 +27,7 @@ export async function handleSubscribe(context: HandlerContext) {
     }
     const subscriber = subscribers?.find((s) => s.address === sender.address);
     if (!subscriber) {
-      db.data.subscribers.push({
+      db?.data?.subscribers?.push({
         address: sender.address,
         status: "subscribed",
       });
