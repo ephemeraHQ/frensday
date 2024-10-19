@@ -31,14 +31,38 @@ export async function agentHandler(context: HandlerContext, name: string) {
     );
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
-    const messages = reply
-      .split("\n")
-      .filter((message) => message.trim() !== "");
-
+    const messages = reply.split("\n").filter((message) =>
+      message
+        ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
+        ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
+        ?.replace(/^#+\s*(.*)$/gm, "$1")
+        ?.replace(/`([^`]+)`/g, "$1")
+        ?.replace(/^`|`$/g, "")
+        ?.trim()
+    );
+    console.log("messages", reply, messages);
     for (const message of messages) {
       if (message.startsWith("/")) {
         const response = await context.intent(message);
-        if (response && response.message) await context.send(response.message);
+        //Add the response to the chat history
+        //console.log("response", response);
+
+        if (response && response.message) {
+          let msg = response?.message
+            ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
+            ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
+            ?.replace(/^#+\s*(.*)$/gm, "$1")
+            ?.replace(/`([^`]+)`/g, "$1")
+            ?.replace(/^`|`$/g, "")
+            ?.trim();
+
+          chatHistories[sender.address].push({
+            role: "system",
+            content: msg,
+          });
+
+          await context.send(response.message);
+        }
       } else {
         await context.send(message);
       }
