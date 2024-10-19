@@ -11,8 +11,9 @@
   "dependencies": {
     "@notionhq/client": "^2.2.15",
     "@redis/client": "^1.6.0",
-    "@xmtp/message-kit": "^1.0.0-beta.12",
+    "@xmtp/message-kit": "^1.1.2",
     "dotenv": "^16.4.5",
+    "lowdb": "^7.0.1",
     "node-cron": "^3.0.3",
     "openai": "^4.67.3",
     "puppeteer": "^23.5.3"

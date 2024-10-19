@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { Client } from "@xmtp/xmtp-js";
-import { RedisClientType } from "@redis/client";
+import { db } from "./db.js";
 import { fetchSpeakers } from "./eventapi.js";
 import fs from "fs/promises";
 import path from "path";
@@ -19,10 +19,7 @@ async function saveSpeakersToFile() {
   await fs.writeFile(SPEAKERS_FILE_PATH, formattedSpeakerInfo);
 }
 
-export async function startCron(
-  redisClient: RedisClientType,
-  v2client: Client
-) {
+export async function startCron(v2client: Client) {
   const conversations = await v2client.conversations.list();
   // Ensure speakers file exists or create it for the first time
   try {
@@ -40,15 +37,17 @@ export async function startCron(
   cron.schedule(
     "0 0 * * *", // Once a day at midnight UTC
     async () => {
-      const keys = await redisClient.keys("*");
-      console.log(`Running task. ${keys.length} subscribers.`);
+      await db.read();
+      const subscribers = db.data.subscribers;
+
+      console.log(`Running task. ${subscribers.length} subscribers.`);
       const speakers = await fs.readFile(SPEAKERS_FILE_PATH, "utf-8");
 
-      for (const address of keys) {
-        const subscriptionStatus = await redisClient.get(address);
+      for (const subscriber of subscribers) {
+        const subscriptionStatus = subscriber.status;
         if (subscriptionStatus === "subscribed") {
           const targetConversation = conversations.find(
-            (conv) => conv.peerAddress === address
+            (conv) => conv.peerAddress === subscriber.address
           );
           if (targetConversation) {
             await targetConversation.send(

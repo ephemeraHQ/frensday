@@ -4,14 +4,11 @@ import fs from "fs";
 import path from "path";
 import { replaceDeeplinks } from "../lib/bots.js";
 import { fileURLToPath } from "url";
-import { RedisClientType } from "@redis/client";
-import { getRedisClient } from "../lib/redis.js";
-const chatHistories: Record<string, any[]> = {};
+let chatHistories: Record<string, any[]> = {};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const redisClient: RedisClientType = await getRedisClient();
 export async function agentHandler(context: HandlerContext, name: string) {
   if (!process?.env?.OPEN_AI_API_KEY) {
     console.log("No OPEN_AI_API_KEY found in .env");
@@ -29,7 +26,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
 
     const { reply, history } = await textGeneration(
       userPrompt,
-      await getSystemPrompt(name, sender),
+      await getSystemPrompt(name, sender, context),
       chatHistories[historyKey]
     );
 
@@ -54,7 +51,11 @@ export async function agentHandler(context: HandlerContext, name: string) {
   }
 }
 
-async function getSystemPrompt(name: string, sender: User) {
+async function getSystemPrompt(
+  name: string,
+  sender: User,
+  context: HandlerContext
+) {
   //General prompt
   let generalPrompt = fs.readFileSync(
     path.resolve(__dirname, `../../src/prompts/general.md`),
@@ -79,6 +80,18 @@ async function getSystemPrompt(name: string, sender: User) {
   //Specific data
 
   if (name === "earl") {
+    const { client, version } = context;
+    const historyKey = `${name}:${sender.address}`;
+    if (version === "v2" && client && !chatHistories[historyKey]) {
+      console.log("Subscribing");
+      const response = await context.intent("/subscribe");
+      if (response?.code == 200)
+        task = task.replace("{STATUS}", response.message);
+      console.log(task);
+      console.log("Adding to group");
+      const response2 = await context.intent("/add");
+      console.log(response2);
+    }
     const speakers = fs.readFileSync(
       path.resolve(__dirname, "../../src/data/speakers.md"),
       "utf8"
@@ -117,8 +130,14 @@ function replaceValues(generalPrompt: string, name: string) {
   )}`;
   generalPrompt = generalPrompt.replace("{NAME}", name);
   generalPrompt = generalPrompt.replace("{TIME}", time);
+
+  //Return with dev addresses for testing
   if (process.env.NODE_ENV !== "production")
     generalPrompt = replaceDeeplinks(generalPrompt);
 
   return generalPrompt;
+}
+
+export async function clearChatHistory() {
+  chatHistories = {};
 }

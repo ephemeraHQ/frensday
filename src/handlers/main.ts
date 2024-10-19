@@ -2,18 +2,15 @@ import { HandlerContext, Config } from "@xmtp/message-kit";
 import { agentHandler } from "./agent.js";
 import { run } from "@xmtp/message-kit";
 import { startCron } from "../lib/cron.js";
-import { getRedisClient } from "../lib/redis.js";
 import { xmtpClient } from "@xmtp/message-kit";
 import { isBot, isReplyFromBot, getBotAddress } from "../lib/bots.js";
 import { RedisClientType } from "@redis/client";
+import { clearChatHistory } from "./agent.js";
 
-const inMemoryCacheStep = new Map<string, number>();
 const stopWords = ["cancel", "reset"];
 
-const redisClient: RedisClientType = await getRedisClient();
-
-const { v2client } = await xmtpClient({}, process.env.KEY_EARL);
-startCron(redisClient, v2client);
+const { v2client } = await xmtpClient({ privateKey: process.env.KEY_EARL });
+startCron(v2client);
 
 export async function mainHandler(appConfig: Config, name: string) {
   run(async (context: HandlerContext) => {
@@ -35,10 +32,10 @@ export async function mainHandler(appConfig: Config, name: string) {
     const lowerContent = text?.toLowerCase();
 
     if (stopWords.some((word) => lowerContent.includes(word))) {
-      inMemoryCacheStep.set(sender.address, 0);
+      clearChatHistory();
+      console.log("Cleared chat history");
       return;
     }
-
     if (lowerContent.startsWith("/")) {
       context.intent(text);
       return;

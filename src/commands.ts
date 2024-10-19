@@ -2,6 +2,7 @@ import type { CommandGroup } from "@xmtp/message-kit";
 import { handleEns } from "./handlers/ens.js";
 import { handlePoap } from "./handlers/poap.js";
 import { handleSubscribe } from "./handlers/subscribe.js";
+import { handleMembers } from "./handlers/members.js";
 
 export const commands: CommandGroup[] = [
   {
@@ -26,6 +27,16 @@ export const commands: CommandGroup[] = [
         },
       },
       {
+        command: "/exists [address]",
+        handler: handleSubscribe,
+        description: "Check if an address is onboarded.",
+        params: {
+          address: {
+            type: "string",
+          },
+        },
+      },
+      {
         command: "/stop [address]",
         handler: handleSubscribe,
         description: "Unsubscribe to updates.",
@@ -34,6 +45,25 @@ export const commands: CommandGroup[] = [
             type: "string",
           },
         },
+      },
+    ],
+  },
+  {
+    name: "Group Bot",
+    description: "Get the group ID.",
+    triggers: ["/id", "/add"],
+    commands: [
+      {
+        command: "/add",
+        handler: handleMembers,
+        description: "Add yourself to the group.",
+        params: {},
+      },
+      {
+        command: "/id",
+        handler: handleMembers,
+        description: "Get the group ID.",
+        params: {},
       },
     ],
   },
