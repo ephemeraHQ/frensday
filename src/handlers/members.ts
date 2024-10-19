@@ -1,6 +1,7 @@
 import { HandlerContext } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 
+const GROUP_ID = "59cc12e7db37917243d7e64b360f4405";
 export async function handleMembers(context: HandlerContext) {
   const {
     message: {
@@ -21,7 +22,7 @@ export async function handleMembers(context: HandlerContext) {
     );
     if (!subscriberExists) {
       const conversation = await client.conversations.getConversationById(
-        process.env.GROUP_ID as string
+        GROUP_ID
       );
       if (conversation) conversation.addMembers([sender.address]);
 
@@ -41,7 +42,7 @@ export async function handleMembers(context: HandlerContext) {
     );
     if (subscriberExists) {
       const conversation = await client.conversations.getConversationById(
-        process.env.GROUP_ID as string
+        GROUP_ID
       );
       if (conversation) conversation.removeMembers([sender.address]);
 
