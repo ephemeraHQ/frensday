@@ -10,7 +10,7 @@
 
 Welcome! I'm Earl, and I'm here to assist you with everything frENSday!
 
-Join us in our event group chat: https://frens-day-fabrizioguespe.replit.app
+Join us in our event group chat: https://frens-day-fabrizioguespe.replit.app (this is Frame, click the button not the URL)
 
 If you need any information about the event or our speakers, just ask me. I'm always happy to help!
 
