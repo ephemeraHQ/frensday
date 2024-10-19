@@ -34,5 +34,26 @@ export async function handleMembers(context: HandlerContext) {
       code: 400,
       message: "You are already in the group",
     };
+  } else if (command == "remove") {
+    await db.read();
+    const subscriberExists = db.data.subscribers.find(
+      (s) => s.address === sender.address
+    );
+    if (subscriberExists) {
+      const conversation = await client.conversations.getConversationById(
+        process.env.GROUP_ID as string
+      );
+      if (conversation) conversation.removeMembers([sender.address]);
+
+      db.data.subscribers = db.data.subscribers.filter(
+        (s) => s.address !== sender.address
+      );
+      await db.write();
+    }
+
+    return {
+      code: 200,
+      message: "You have been removed to the group",
+    };
   }
 }

@@ -9,7 +9,7 @@ export async function handleSubscribe(context: HandlerContext) {
     },
   } = context;
   await db.read();
-  if (command == "stop") {
+  if (command == "unsubscribe") {
     const subscribers = db.data.subscribers;
     const subscriber = subscribers.find((s) => s.address === sender.address);
     if (subscriber) {

@@ -14,7 +14,7 @@ export const commands: CommandGroup[] = [
   {
     name: "Subscribe",
     description: "Subscribe to updates.",
-    triggers: ["/subscribe", "/stop"],
+    triggers: ["/subscribe", "/unsubscribe"],
     commands: [
       {
         command: "/subscribe [address]",
@@ -37,7 +37,7 @@ export const commands: CommandGroup[] = [
         },
       },
       {
-        command: "/stop [address]",
+        command: "/unsubscribe [address]",
         handler: handleSubscribe,
         description: "Unsubscribe to updates.",
         params: {
@@ -51,12 +51,18 @@ export const commands: CommandGroup[] = [
   {
     name: "Group Bot",
     description: "Get the group ID.",
-    triggers: ["/id", "/add"],
+    triggers: ["/id", "/add", "/remove"],
     commands: [
       {
         command: "/add",
         handler: handleMembers,
         description: "Add yourself to the group.",
+        params: {},
+      },
+      {
+        command: "/remove",
+        handler: handleMembers,
+        description: "Remove yourself from the group.",
         params: {},
       },
       {

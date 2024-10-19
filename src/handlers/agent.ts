@@ -44,7 +44,6 @@ export async function agentHandler(context: HandlerContext, name: string) {
     for (const message of messages) {
       if (message.startsWith("/")) {
         const response = await context.intent(message);
-        //Add the response to the chat history
         //console.log("response", response);
 
         if (response && response.message) {

@@ -7,7 +7,7 @@ import { isBot, isReplyFromBot, getBotAddress } from "../lib/bots.js";
 import { RedisClientType } from "@redis/client";
 import { clearChatHistory } from "./agent.js";
 
-const stopWords = ["cancel", "reset"];
+const stopWords = ["cancel", "reset", "stop"];
 
 const { v2client } = await xmtpClient({ privateKey: process.env.KEY_EARL });
 startCron(v2client);
@@ -33,7 +33,13 @@ export async function mainHandler(appConfig: Config, name: string) {
 
     if (stopWords.some((word) => lowerContent.includes(word))) {
       clearChatHistory();
-      console.log("Cleared chat history");
+      context.send("Cleared chat history");
+      //remove from group
+      const response = await context.intent("/remove");
+      const response2 = await context.intent("/unsubscribe");
+      if (response && response.message) context.send(response.message);
+      if (response2 && response2.message) context.send(response2.message);
+
       return;
     }
     if (lowerContent.startsWith("/")) {
