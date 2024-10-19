@@ -34,9 +34,9 @@ export async function startCron(v2client: Client) {
     await saveSpeakersToFile();
   });
   await db.read();
-  const subscribers = db.data.subscribers;
+  const subscribers = db?.data?.subscribers;
   console.log(
-    `Cron job to fetch and save speakers every 10 minutes and send updates to ${subscribers.length} subscribers`
+    `Cron job to fetch and save speakers every 10 minutes and send updates to ${subscribers?.length} subscribers`
   );
   // Cron job to send updates once a day at midnight UTC
   cron.schedule(

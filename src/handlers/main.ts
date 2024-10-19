@@ -9,8 +9,13 @@ import { clearChatHistory } from "./agent.js";
 
 const stopWords = ["cancel", "reset", "stop"];
 
-const { v2client } = await xmtpClient({ privateKey: process.env.KEY_EARL });
-startCron(v2client);
+const { v2client: bittu } = await xmtpClient({
+  privateKey: process.env.KEY_BITTU,
+});
+const { v2client: earl } = await xmtpClient({
+  privateKey: process.env.KEY_EARL,
+});
+startCron(earl);
 
 export async function mainHandler(appConfig: Config) {
   //@ts-ignore
@@ -31,21 +36,23 @@ export async function mainHandler(appConfig: Config) {
     } = context;
     const isBotBool = await isBot(sender.address);
     if (isBotBool) return; //return if its bot
-
-    if (typeId === "group_updated") {
+    console.log(typeId);
+    if (typeId === "group_updated" && name == "bittu") {
       const { addedInboxes } = context.message.content;
-
+      console.log(addedInboxes);
       if (addedInboxes.length === 1) {
         const addedMember = await members?.find(
           (member: any) => member.inboxId === addedInboxes[0]?.inboxId
         );
+        console.log(addedMember);
         if (addedMember) {
           console.log(addedMember);
           group.send("Welcome to the group!");
           console.log(`User added: ${addedMember?.address}`);
-          context.sendTo("psst, do you want a exclusive POAP?", [
-            addedMember?.address,
-          ]);
+          const conv = await bittu.conversations.newConversation(
+            addedMember.address
+          );
+          await conv.send("psst, do you want a exclusive POAP?");
         }
       }
 

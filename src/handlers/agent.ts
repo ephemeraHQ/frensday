@@ -16,17 +16,17 @@ export async function agentHandler(context: HandlerContext, name: string) {
   }
 
   const {
-    message: { content, sender },
+    message: {
+      content: { content: userPrompt },
+      sender,
+    },
     group,
   } = context;
-
   try {
-    const { content: userPrompt } = content;
-    const { client, version } = context;
     const historyKey = `${name}:${sender.address}`;
 
     //Onboarding
-    if (name === "earl") {
+    if (name === "earl" && !group) {
       if (await onboard(context, name, sender)) return;
     }
 
@@ -157,11 +157,9 @@ async function onboard(context: HandlerContext, name: string, sender: User) {
   if (name === "earl") {
     try {
       const exists = await context.intent(`/exists ${sender.address}`);
-      console.log("exists", exists);
       if (exists?.code == 400) {
         console.log("Adding to group");
         const response2 = await context.intent("/add");
-        console.log("response2", response2);
         if (response2?.code == 200) {
           //onboard message
           context.send(
