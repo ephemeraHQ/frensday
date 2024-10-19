@@ -24,7 +24,7 @@ export async function handleMembers(context: HandlerContext) {
       const conversation = await client.conversations.getConversationById(
         GROUP_ID
       );
-      if (conversation) conversation.addMembers([sender.address]);
+      if (conversation) await conversation.addMembers([sender.address]);
 
       return {
         code: 200,
@@ -50,7 +50,8 @@ export async function handleMembers(context: HandlerContext) {
       const member = members?.find((m) =>
         m.accountAddresses.includes(sender.address)
       );
-      if (member) conversation?.removeMembers([member.accountAddresses[0]]);
+      if (member)
+        await conversation?.removeMembers([member.accountAddresses[0]]);
 
       db.data.subscribers = db.data.subscribers.filter(
         (s) => s.address !== sender.address
