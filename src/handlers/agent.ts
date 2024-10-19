@@ -107,15 +107,15 @@ async function getSystemPrompt(
     const { client, version } = context;
     const historyKey = `${name}:${sender.address}`;
     if (version === "v2" && client && !chatHistories[historyKey]) {
+      console.log("Adding to group");
+      const response2 = await context.intent("/add");
+      console.log(response2);
+
       console.log("Subscribing");
       const response = await context.intent("/subscribe");
       if (response?.code == 200)
         task = task.replace("{STATUS}", response.message);
       else task = task.replace("{STATUS}", "");
-
-      console.log("Adding to group");
-      const response2 = await context.intent("/add");
-      console.log(response2);
     }
     const speakers = fs.readFileSync(
       path.resolve(__dirname, "../../src/data/speakers.md"),
