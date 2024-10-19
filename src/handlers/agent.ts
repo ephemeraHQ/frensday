@@ -87,7 +87,8 @@ async function getSystemPrompt(
       const response = await context.intent("/subscribe");
       if (response?.code == 200)
         task = task.replace("{STATUS}", response.message);
-      console.log(task);
+      else task = task.replace("{STATUS}", "");
+
       console.log("Adding to group");
       const response2 = await context.intent("/add");
       console.log(response2);
