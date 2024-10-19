@@ -12,7 +12,10 @@ const stopWords = ["cancel", "reset", "stop"];
 const { v2client } = await xmtpClient({ privateKey: process.env.KEY_EARL });
 startCron(v2client);
 
-export async function mainHandler(appConfig: Config, name: string) {
+export async function mainHandler(appConfig: Config) {
+  //@ts-ignore
+  const { name } = appConfig;
+
   run(async (context: HandlerContext) => {
     const {
       message: {
@@ -22,13 +25,32 @@ export async function mainHandler(appConfig: Config, name: string) {
         sender,
       },
       group,
+      members,
       version,
       getReplyChain,
     } = context;
     const isBotBool = await isBot(sender.address);
     if (isBotBool) return; //return if its bot
 
-    if (typeId !== "text" && typeId !== "reply") return;
+    if (typeId === "group_updated") {
+      const { addedInboxes } = context.message.content;
+
+      if (addedInboxes.length === 1) {
+        const addedMember = await members?.find(
+          (member: any) => member.inboxId === addedInboxes[0]?.inboxId
+        );
+        if (addedMember) {
+          console.log(addedMember);
+          group.send("Welcome to the group!");
+          console.log(`User added: ${addedMember?.address}`);
+          context.sendTo("psst, do you want a exclusive POAP?", [
+            addedMember?.address,
+          ]);
+        }
+      }
+
+      return;
+    } else if (typeId !== "text" && typeId !== "reply") return;
     const lowerContent = text?.toLowerCase();
 
     if (stopWords.some((word) => lowerContent.includes(word))) {

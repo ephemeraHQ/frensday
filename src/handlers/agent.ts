@@ -22,11 +22,17 @@ export async function agentHandler(context: HandlerContext, name: string) {
 
   try {
     const { content: userPrompt } = content;
+    const { client, version } = context;
     const historyKey = `${name}:${sender.address}`;
+
+    //Onboarding
+    if (name === "earl") {
+      if (await onboard(context, name, sender)) return;
+    }
 
     const { reply, history } = await textGeneration(
       userPrompt,
-      await getSystemPrompt(name, sender, context),
+      await getSystemPrompt(name, sender),
       chatHistories[historyKey]
     );
 
@@ -74,11 +80,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
   }
 }
 
-async function getSystemPrompt(
-  name: string,
-  sender: User,
-  context: HandlerContext
-) {
+async function getSystemPrompt(name: string, sender: User) {
   //General prompt
   let generalPrompt = fs.readFileSync(
     path.resolve(__dirname, `../../src/prompts/general.md`),
@@ -103,19 +105,6 @@ async function getSystemPrompt(
   //Specific data
 
   if (name === "earl") {
-    const { client, version } = context;
-    const historyKey = `${name}:${sender.address}`;
-    if (version === "v2" && client && !chatHistories[historyKey]) {
-      console.log("Adding to group");
-      const response2 = await context.intent("/add");
-      console.log(response2);
-
-      console.log("Subscribing");
-      const response = await context.intent("/subscribe");
-      if (response?.code == 200)
-        task = task.replace("{STATUS}", response.message);
-      else task = task.replace("{STATUS}", "");
-    }
     const speakers = fs.readFileSync(
       path.resolve(__dirname, "../../src/data/speakers.md"),
       "utf8"
@@ -129,8 +118,6 @@ async function getSystemPrompt(
     );
     task = task + "\n\n### Thailand\n\n" + thailand;
   }
-
-  //Putting it all together
 
   const systemPrompt =
     generalPrompt +
@@ -164,4 +151,39 @@ function replaceValues(generalPrompt: string, name: string) {
 
 export async function clearChatHistory() {
   chatHistories = {};
+}
+
+async function onboard(context: HandlerContext, name: string, sender: User) {
+  if (name === "earl") {
+    try {
+      const exists = await context.intent(`/exists ${sender.address}`);
+      console.log("exists", exists);
+      if (exists?.code == 400) {
+        console.log("Adding to group");
+        const response2 = await context.intent("/add");
+        console.log("response2", response2);
+        if (response2?.code == 200) {
+          //onboard message
+          context.send(
+            `Welcome! I'm Earl, and I'm here to assist you with everything frENSday!
+
+Join us in our event group chat: https://bit.ly/frensday
+
+If you need any information about the event or our speakers, just ask me. I'm always happy to help!`
+          );
+          console.log("Subscribing");
+          const response = await context.intent("/subscribe");
+          context.send(response?.message ?? "");
+          context.send(
+            "psst... by the way, check with Bittu for a exclusive POAP 😉"
+          );
+
+          return true;
+        }
+      }
+    } catch (error) {
+      console.log("Error adding to group", error);
+    }
+    return false;
+  }
 }

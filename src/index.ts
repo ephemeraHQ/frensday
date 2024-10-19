@@ -26,11 +26,11 @@ const appConfig_BITTU = {
 };
 
 Promise.all([
-  await mainHandler(appConfig_KUZCO, appConfig_KUZCO.name),
-  await mainHandler(appConfig_PEANUT, appConfig_PEANUT.name),
-  await mainHandler(appConfig_LILI, appConfig_LILI.name),
-  await mainHandler(appConfig_EARL, appConfig_EARL.name),
-  await mainHandler(appConfig_BITTU, appConfig_BITTU.name),
+  await mainHandler(appConfig_KUZCO),
+  await mainHandler(appConfig_PEANUT),
+  await mainHandler(appConfig_LILI),
+  await mainHandler(appConfig_EARL),
+  await mainHandler(appConfig_BITTU),
 ]);
 
 async function setupFiles() {

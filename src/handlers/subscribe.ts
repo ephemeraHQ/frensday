@@ -42,19 +42,5 @@ export async function handleSubscribe(context: HandlerContext) {
       code: 400,
       message: "Error subscribing to updates.",
     };
-  } else if (command == "exists") {
-    const subscribers = db.data.subscribers;
-    const subscriber = subscribers?.find((s) => s.address === params.address);
-    if (subscriber) {
-      return {
-        code: 200,
-        message: "Address was onboarded",
-      };
-    } else {
-      return {
-        code: 400,
-        message: "Address was not onboarded",
-      };
-    }
   }
 }

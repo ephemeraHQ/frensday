@@ -27,16 +27,6 @@ export const commands: CommandGroup[] = [
         },
       },
       {
-        command: "/exists [address]",
-        handler: handleSubscribe,
-        description: "Check if an address is onboarded.",
-        params: {
-          address: {
-            type: "string",
-          },
-        },
-      },
-      {
         command: "/unsubscribe [address]",
         handler: handleSubscribe,
         description: "Unsubscribe to updates.",
@@ -51,7 +41,7 @@ export const commands: CommandGroup[] = [
   {
     name: "Group Bot",
     description: "Get the group ID.",
-    triggers: ["/id", "/add", "/remove"],
+    triggers: ["/id", "/add", "/remove", "/exists"],
     commands: [
       {
         command: "/add",
@@ -70,6 +60,16 @@ export const commands: CommandGroup[] = [
         handler: handleMembers,
         description: "Get the group ID.",
         params: {},
+      },
+      {
+        command: "/exists [address]",
+        handler: handleSubscribe,
+        description: "Check if an address is onboarded.",
+        params: {
+          address: {
+            type: "string",
+          },
+        },
       },
     ],
   },

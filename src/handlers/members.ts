@@ -44,7 +44,13 @@ export async function handleMembers(context: HandlerContext) {
       const conversation = await client.conversations.getConversationById(
         GROUP_ID
       );
-      if (conversation) conversation.removeMembers([sender.address]);
+
+      //Remove from group
+      const members = await conversation?.members();
+      const member = members?.find((m) =>
+        m.accountAddresses.includes(sender.address)
+      );
+      if (member) conversation?.removeMembers([member.accountAddresses[0]]);
 
       db.data.subscribers = db.data.subscribers.filter(
         (s) => s.address !== sender.address
@@ -60,5 +66,19 @@ export async function handleMembers(context: HandlerContext) {
       code: 400,
       message: "Your removal request has been denied",
     };
+  } else if (command == "exists") {
+    const subscribers = db.data.subscribers;
+    const subscriber = subscribers?.find((s) => s.address === params.address);
+    if (subscriber) {
+      return {
+        code: 200,
+        message: "Address was onboarded",
+      };
+    } else {
+      return {
+        code: 400,
+        message: "Address was not onboarded",
+      };
+    }
   }
 }
