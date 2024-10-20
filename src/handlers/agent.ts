@@ -159,8 +159,8 @@ async function onboard(context: HandlerContext, name: string, sender: User) {
     try {
       const exists = await context.intent(`/exists ${sender.address}`);
       if (exists?.code == 400) {
-        console.log("Adding to group");
         const response2 = await context.intent("/add");
+        console.log("Adding to group", response2);
         if (response2?.code == 200) {
           //onboard message
           context.send(
@@ -176,7 +176,7 @@ If you need any information about the event or our speakers, just ask me. I'm al
             context.send(
               "psst... by the way, check with Bittu https://converse.xyz/dm/bittu.frens.eth for a exclusive POAP 😉"
             );
-          }, 60000); // 60000 milliseconds = 1 minute
+          }, 120000); // 120000 milliseconds = 2 minutes
           console.log(`User added: ${sender.address}`);
 
           //context.intent(`/sendpoap ${sender.address}`);
