@@ -180,10 +180,10 @@ If you need any information about the event or our speakers, just ask me. I'm al
           );
           console.log(`User added: ${sender.address}`);
 
-          const conv = await bittu.conversations.newConversation(
+          /*const conv = await bittu.conversations.newConversation(
             sender.address
           );
-          await conv.send("psst, do you want a exclusive POAP?");
+          await conv.send("psst, do you want a exclusive POAP?");*/
           return true;
         }
       }
