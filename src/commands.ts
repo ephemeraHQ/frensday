@@ -22,7 +22,7 @@ export const commands: CommandGroup[] = [
         description: "Subscribe to updates.",
         params: {
           address: {
-            type: "string",
+            type: "address",
           },
         },
       },
@@ -32,7 +32,7 @@ export const commands: CommandGroup[] = [
         description: "Unsubscribe to updates.",
         params: {
           address: {
-            type: "string",
+            type: "address",
           },
         },
       },
@@ -67,7 +67,7 @@ export const commands: CommandGroup[] = [
         description: "Check if an address is onboarded.",
         params: {
           address: {
-            type: "string",
+            type: "address",
           },
         },
       },
@@ -76,7 +76,7 @@ export const commands: CommandGroup[] = [
   {
     name: "Poap Bot",
     description: "Get your POAP.",
-    triggers: ["/poap"],
+    triggers: ["/poap", "/sendpoap"],
     commands: [
       {
         command: "/poap [address]",
@@ -84,7 +84,17 @@ export const commands: CommandGroup[] = [
         description: "Get your POAP.",
         params: {
           address: {
-            type: "string",
+            type: "address",
+          },
+        },
+      },
+      {
+        command: "/sendpoap [address]",
+        handler: handlePoap,
+        description: "Send a POAP to the group.",
+        params: {
+          address: {
+            type: "address",
           },
         },
       },

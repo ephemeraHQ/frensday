@@ -6,10 +6,6 @@ import { replaceDeeplinks } from "../lib/bots.js";
 import { fileURLToPath } from "url";
 let chatHistories: Record<string, any[]> = {};
 
-const { v2client: bittu } = await xmtpClient({
-  privateKey: process.env.KEY_BITTU,
-});
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -174,16 +170,15 @@ Join us in our event group chat: https://bit.ly/frensday
 If you need any information about the event or our speakers, just ask me. I'm always happy to help!`
           );
           const response = await context.intent("/subscribe");
-          context.send(response?.message ?? "");
-          context.send(
-            "psst... by the way, check with Bittu https://converse.xyz/dm/bittu.frens.eth for a exclusive POAP 😉"
-          );
+          console.log(response?.message ?? "");
+          setTimeout(() => {
+            context.send(
+              "psst... by the way, check with Bittu https://converse.xyz/dm/bittu.frens.eth for a exclusive POAP 😉"
+            );
+          }, 60000); // 60000 milliseconds = 1 minute
           console.log(`User added: ${sender.address}`);
 
-          /*const conv = await bittu.conversations.newConversation(
-            sender.address
-          );
-          await conv.send("psst, do you want a exclusive POAP?");*/
+          //context.intent(`/sendpoap ${sender.address}`);
           return true;
         }
       }

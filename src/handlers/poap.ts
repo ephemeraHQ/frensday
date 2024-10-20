@@ -1,15 +1,20 @@
-import { HandlerContext } from "@xmtp/message-kit";
+import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 await db.read();
 
+const { v2client: bittu, client: bittu3 } = await xmtpClient({
+  privateKey: process.env.KEY_BITTU,
+});
 export async function handlePoap(context: HandlerContext) {
+  //@ts-ignore
+  const { name } = context;
   const {
     message: {
       content: { content: text, command, params },
       sender,
     },
+    v2client,
   } = context;
-
   if (command == "poap" && text == "/poap list") {
     const poapTable = db?.data?.poaps;
     const claimed = poapTable.filter((poap) => poap.Address);
@@ -29,7 +34,7 @@ export async function handlePoap(context: HandlerContext) {
     await db.read();
     const poapTable = db?.data?.poaps;
     const poap = poapTable.find((poap) => poap.Address == address);
-    console.log(poap);
+
     if (!poap) {
       const emptyPoap = poapTable.find((poap) => !poap.Address);
       if (emptyPoap) {
@@ -42,6 +47,25 @@ export async function handlePoap(context: HandlerContext) {
     } else {
       await context.send(`You have already claimed this POAP ${poap?.URL}`);
     }
-    //clearChatHistory();
+  } else if (command == "sendpoap") {
+    const { address } = params;
+
+    await bittu3.conversations?.sync();
+    const conversations = await bittu.conversations.list();
+    let targetConversation = conversations.find(
+      (conv) => conv.peerAddress.toLowerCase() === address.toLowerCase()
+    );
+
+    if (!targetConversation) {
+      targetConversation = await bittu.conversations.newConversation(
+        address.toLowerCase()
+      );
+    }
+
+    // Send the message only once per receiver
+    const msg = await targetConversation.send("Here is your POAP");
+
+    if (msg) return { code: 200, message: "POAP sent" };
+    return { code: 500, message: "Failed to send POAP" };
   }
 }
