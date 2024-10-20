@@ -37,20 +37,20 @@ export async function agentHandler(context: HandlerContext, name: string) {
     );
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
-    const messages = reply.split("\n").filter((message) =>
-      message
+    const messages = reply.split("\n").filter((message) => {
+      const trimmedMessage = message
         ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
         ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
         ?.replace(/^#+\s*(.*)$/gm, "$1")
         ?.replace(/`([^`]+)`/g, "$1")
         ?.replace(/^`|`$/g, "")
-        ?.trim()
-    );
+        ?.trim();
+      return trimmedMessage && trimmedMessage.length > 0;
+    });
     console.log("messages", reply, messages);
     for (const message of messages) {
-      const trimmedMessage = message.trim();
-      if (trimmedMessage.startsWith("/")) {
-        const response = await context.intent(trimmedMessage);
+      if (message.startsWith("/")) {
+        const response = await context.intent(message);
         //console.log("response", response);
 
         if (response && response.message) {
