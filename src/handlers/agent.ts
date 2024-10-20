@@ -162,12 +162,13 @@ async function onboard(context: HandlerContext, name: string, sender: User) {
         const response2 = await context.intent("/add");
         console.log("Adding to group", response2);
         // Sleep for 30 seconds
+        const groupId = process.env.GROUP_ID;
         if (response2?.code == 200) {
           //onboard message
           context.send(
             `Welcome! I'm Earl, and I'm here to assist you with everything frENSday!
 
-Join us in our event group chat: https://bit.ly/frensday
+Join us in our event group chat: https://bit.ly/frensday?groupId=${groupId}
 
 If you need any information about the event or our speakers, just ask me. I'm always happy to help!`
           );
