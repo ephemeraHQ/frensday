@@ -161,6 +161,7 @@ async function onboard(context: HandlerContext, name: string, sender: User) {
       if (exists?.code == 400) {
         const response2 = await context.intent("/add");
         console.log("Adding to group", response2);
+        // Sleep for 30 seconds
         if (response2?.code == 200) {
           //onboard message
           context.send(
