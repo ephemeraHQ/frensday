@@ -176,7 +176,7 @@ If you need any information about the event or our speakers, just ask me. I'm al
           const response = await context.intent("/subscribe");
           context.send(response?.message ?? "");
           context.send(
-            "psst... by the way, check with Bittu for a exclusive POAP 😉"
+            "psst... by the way, check with Bittu https://converse.xyz/dm/bittu.frens.eth for a exclusive POAP 😉"
           );
           console.log(`User added: ${sender.address}`);
 
