@@ -2,9 +2,10 @@ import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 await db.read();
 
-const { v2client: bittu, client: bittu3 } = await xmtpClient({
+const { v2client: bittu } = await xmtpClient({
   privateKey: process.env.KEY_BITTU,
 });
+
 export async function handlePoap(context: HandlerContext) {
   //@ts-ignore
   const { name } = context;
@@ -48,23 +49,22 @@ export async function handlePoap(context: HandlerContext) {
       await context.send(`You have already claimed this POAP ${poap?.URL}`);
     }
   } else if (command == "sendpoap") {
-    const { address } = params;
-
-    await bittu3.conversations?.sync();
     const conversations = await bittu.conversations.list();
+
     let targetConversation = conversations.find(
-      (conv) => conv.peerAddress.toLowerCase() === address.toLowerCase()
+      (conv) => conv.peerAddress.toLowerCase() === sender.address.toLowerCase()
     );
+    console.log(targetConversation);
 
     if (!targetConversation) {
       targetConversation = await bittu.conversations.newConversation(
-        address.toLowerCase()
+        sender.address.toLowerCase()
       );
     }
-
-    // Send the message only once per receiver
-    const msg = await targetConversation.send("Here is your POAP");
-
+    const msg = await targetConversation.send(
+      "psst, Bittu here. Do you want a exclusive POAP? Just ask me for it."
+    );
+    console.log(msg.id);
     if (msg) return { code: 200, message: "POAP sent" };
     return { code: 500, message: "Failed to send POAP" };
   }

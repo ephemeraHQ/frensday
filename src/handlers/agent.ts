@@ -181,7 +181,8 @@ If you need any information about the event or our speakers, just ask me. I'm al
           }, 120000); // 120000 milliseconds = 2 minutes
           console.log(`User added: ${sender.address}`);
 
-          //context.intent(`/sendpoap ${sender.address}`);
+          const msg = await context.intent(`/sendpoap ${sender.address}`);
+          console.log(msg);
           return true;
         }
       }
