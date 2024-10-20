@@ -37,6 +37,6 @@ async function setupFiles() {
   if (!fs.existsSync(".data/db.json")) {
     const dbfile = fs.readFileSync("src/data/db.json", "utf8");
     fs.writeFileSync(".data/db.json", dbfile);
-    console.log("DB file created");
+    console.log("DB file created", dbfile);
   }
 }
