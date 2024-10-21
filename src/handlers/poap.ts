@@ -40,12 +40,15 @@ export async function handlePoap(context: HandlerContext) {
       const emptyPoap = poapTable.find((poap) => !poap.Address);
       if (emptyPoap) {
         db?.data?.poaps?.push({ URL: emptyPoap?.URL, Address: address });
+        //?user_address=${address}`
         await context.send(`Here is your POAP ${emptyPoap?.URL}`);
+
         await db.write();
       } else {
         await context.send("No more POAPs available");
       }
     } else {
+      //?user_address=${address}`
       await context.send(`You have already claimed this POAP ${poap?.URL}`);
     }
   } else if (command == "sendpoap") {

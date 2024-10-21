@@ -14,7 +14,7 @@ Medha Kothari - Product Manager — Uniswap Labs
 
 slobo.eth - Founder — NameStone, & Lead Steward — ENS DAO Ecosystem Working Group
 
-evin.eth - Founder — Disco.xyz
+evin.eth - Founder — Privado.id
 
 Moises E. Jaramillo - Principal Engineer — Dentity
 
