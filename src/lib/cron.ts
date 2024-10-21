@@ -41,7 +41,7 @@ export async function startCron(v2client: Client) {
   );
   // Cron job to send updates once a day at midnight UTC
   cron.schedule(
-    "0 0 * * *", // Once a day at midnight UTC
+    "0 0 */2 * *", // Every 2 days at midnight UTC
     async () => {
       await db.read();
       const subscribers = db?.data?.subscribers;

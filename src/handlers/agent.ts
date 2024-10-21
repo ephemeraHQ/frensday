@@ -178,7 +178,7 @@ If you need any information about the event or our speakers, just ask me. I'm al
             context.send(
               "psst... by the way, check with Bittu https://converse.xyz/dm/bittu.frens.eth for a exclusive POAP 😉"
             );
-          }, 120000); // 120000 milliseconds = 2 minutes
+          }, 60000); // 60000 milliseconds = 1 minute
           console.log(`User added: ${sender.address}`);
 
           const msg = await context.intent(`/sendpoap ${sender.address}`);
