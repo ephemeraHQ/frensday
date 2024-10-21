@@ -3,6 +3,7 @@ import { Client } from "@xmtp/xmtp-js";
 import { db } from "./db.js";
 import { fetchSpeakers } from "./eventapi.js";
 import fs from "fs/promises";
+import { textGeneration } from "./openai.js";
 import path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
@@ -74,4 +75,26 @@ export async function startCron(v2client: Client) {
       timezone: "UTC",
     }
   );
+}
+
+export async function generateAnnouncement() {
+  const speakers = await fs.readFile(SPEAKERS_FILE_PATH, "utf-8");
+  const systemPrompt = `
+  You are Earl, a  helpful assistant that generates announcements for an event.
+  - Only provide answers based on verified information.
+  - Keep it super short.
+  - Keep it simple and short.
+  - Do not make guesses or assumptions
+  - For a exclusive POAP go to Bittu http://converse.xyz/dm/bittu.frens.eth 
+  - For playing games to Peanut http://converse.xyz/dm/peanut.frens.eth
+  - For all about ENS domains go to Kuzco http://converse.xyz/dm/kuzco.frens.eth
+  - And for all about Bangkok side events go to Lili http://converse.xyz/dm/lili.frens.eth
+  - You will be sending once a day so keep it really short and random. 
+  `;
+  const userPrompt = `Based on the following list of speakers, generate an announcement for the event:
+  ${speakers}
+  `;
+  const { reply } = await textGeneration(userPrompt, systemPrompt);
+  console.log(reply);
+  return reply;
 }
