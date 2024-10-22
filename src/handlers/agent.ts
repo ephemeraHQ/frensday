@@ -37,34 +37,44 @@ export async function agentHandler(context: HandlerContext, name: string) {
     );
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
-    console.log(reply);
-    let messages = reply
-      .split("\n")
-      .map((message: string) => responseParser(message))
-      .filter((message): message is string => message.length > 0);
 
-    for (const message of messages) {
-      if (message.startsWith("/")) {
-        const response = await context.intent(message);
-        if (response && response.message) {
-          let msg = responseParser(response.message);
-
-          chatHistories[sender.address]?.push({
-            role: "system",
-            content: msg,
-          });
-
-          await context.send(response.message);
-        }
-      } else {
-        await context.send(message);
-      }
-    }
+    await processResponseWithIntent(reply, context, sender.address);
   } catch (error) {
     console.error("Error during OpenAI call:", error);
     await context.send(
       "Oops looks like something went wrong. Please call my creator to fix me."
     );
+  }
+}
+
+async function processResponseWithIntent(
+  reply: string,
+  context: any,
+  senderAddress: string
+) {
+  let messages = reply
+    .split("\n")
+    .map((message: string) => responseParser(message))
+    .filter((message): message is string => message.length > 0);
+
+  for (const message of messages) {
+    if (message.startsWith("/")) {
+      const response = await context.intent(message);
+      if (response && response.message) {
+        let msg = responseParser(response.message);
+
+        chatHistories[senderAddress]?.push({
+          role: "system",
+          content: msg,
+        });
+
+        await context.send(response.message);
+        return chatHistories;
+      }
+    } else {
+      await context.send(message);
+      return chatHistories;
+    }
   }
 }
 
