@@ -1,4 +1,23 @@
-import { HandlerContext, User } from "@xmtp/message-kit";
+import { HandlerContext } from "@xmtp/message-kit";
+
+interface EnsData {
+  address?: string;
+  avatar?: string;
+  avatar_small?: string;
+  avatar_url?: string;
+  contentHash?: string;
+  description?: string;
+  ens?: string;
+  ens_primary?: string;
+  github?: string;
+  resolverAddress?: string;
+  twitter?: string;
+  url?: string;
+  wallets?: {
+    eth?: string;
+  };
+}
+const chatHistories: Record<string, any[]> = {};
 
 interface EnsData {
   address?: string;
@@ -21,25 +40,47 @@ interface EnsData {
 export async function handleEns(context: HandlerContext) {
   const {
     message: {
-      content: { command, params },
+      content: { command, params, sender },
     },
   } = context;
+  const frameUrl = "https://ens.steer.fun/";
+  const baseUrl = "https://app.ens.domains/";
+  if (command == "renew") {
+    // Destructure and validate parameters for the ens command
+    const { domain } = params;
+    // Check if the user holds the domain
+    if (!domain) {
+      context.reply("Missing required parameters. Please provide domain.");
+      return;
+    }
 
-  const baseUrl = "https://ens.steer.fun/";
-  if (command == "register") {
+    const response = await fetch(`https://ensdata.net/${domain}`);
+    const data: EnsData = (await response.json()) as EnsData;
+
+    if (data?.address !== sender?.address) {
+      context.reply(
+        "You do not hold this domain. Only the owner can renew it."
+      );
+      return;
+    }
+
+    // Generate URL for the ens
+    let url_ens = frameUrl + "frames/manage?name=" + domain;
+    context.send(`${url_ens}`);
+  } else if (command == "register") {
     // Destructure and validate parameters for the ens command
     const { domain } = params;
 
     if (!domain) {
-      context.send("Missing required parameters. Please provide domain.");
+      context.reply("Missing required parameters. Please provide domain.");
       return;
     }
     // Generate URL for the ens
-    let url_ens = baseUrl + "frames/manage?name=" + domain;
+    let url_ens = baseUrl + domain + "/register";
     context.send(`${url_ens}`);
   } else if (command == "help") {
     context.send(
-      "Here is the list of commands:\n/register [domain]: Register a domain.\n/info [domain]: Get information about a domain.\n/check [domain]: Check if a domain is available.\n/help: Show the list of commands"
+      "Here is the list of commands:\n/register [domain]: Register a domain.\n/renew [domain]: Renew a domain.\n/info [domain]: Get information about a domain.\n/check [domain]: Check if a domain is available.\n/help: Show the list of commands"
     );
   } else if (command == "info") {
     const { domain } = params;
@@ -55,7 +96,7 @@ export async function handleEns(context: HandlerContext) {
       GitHub: data?.github,
       "Resolver address": data?.resolverAddress,
       Twitter: data?.twitter,
-      URL: `https://app.ens.domains/${domain}`,
+      URL: `${baseUrl}${domain}`,
     };
 
     let message = "Domain information:\n\n";
@@ -65,12 +106,13 @@ export async function handleEns(context: HandlerContext) {
       }
     }
 
-    context.send(message);
+    return { code: 200, message };
+    // context.send(message);
   } else if (command == "check") {
     const { domain } = params;
 
     if (!domain) {
-      context.send("Please provide a domain name to check.");
+      context.reply("Please provide a domain name to check.");
       return;
     }
     const response = await fetch(`https://ensdata.net/${domain}`);
@@ -78,15 +120,15 @@ export async function handleEns(context: HandlerContext) {
 
     //@ts-ignore
     if (data.status == 404) {
-      context.send(
-        `Looks like ${domain} is available! Do you want to register it? https://ens.steer.fun/frames/manage?name=${domain}`
-      );
+      return {
+        code: 200,
+        message: `Looks like ${domain} is available! Do you want to register it? ${baseUrl}${domain}`,
+      };
     } else {
-      context.send(
-        `Looks like ${domain} is already registered! Let's try another one`
-      );
+      return {
+        code: 404,
+        message: `Looks like ${domain} is already registered! Let's try another one`,
+      };
     }
-  } else {
-    context.send("Unknown command. Please try again.");
   }
 }

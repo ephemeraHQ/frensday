@@ -1,4 +1,5 @@
-import { HandlerContext, User, xmtpClient } from "@xmtp/message-kit";
+import { HandlerContext, User } from "@xmtp/message-kit";
+import { responseParser } from "../lib/openai.js";
 import { textGeneration } from "../lib/openai.js";
 import fs from "fs";
 import path from "path";
@@ -26,9 +27,8 @@ export async function agentHandler(context: HandlerContext, name: string) {
     const historyKey = `${name}:${sender.address}`;
 
     //Onboarding
-    if (name === "earl" && !group) {
+    if (name === "earl" && !group)
       if (await onboard(context, name, sender)) return;
-    }
 
     const { reply, history } = await textGeneration(
       userPrompt,
@@ -37,41 +37,31 @@ export async function agentHandler(context: HandlerContext, name: string) {
     );
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
-    const messages = reply.split("\n").filter((message) => {
-      const trimmedMessage = message
-        ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
-        ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
-        ?.replace(/^#+\s*(.*)$/gm, "$1")
-        ?.replace(/`([^`]+)`/g, "$1")
-        ?.replace(/^`|`$/g, "")
-        ?.trim();
-      return trimmedMessage && trimmedMessage.length > 0;
-    });
-    console.log("messages", reply, messages);
+
+    let reply2 = `
+    Hello there! I'm Bittu, the flexible Jelly. How do you feel about flowing into the world of POAPs today? I've got a unique one just for you! Let me share it with you.
+      /poap 0x5f2d6D97B7cF33DE7DF2d1c0fe26dC68F7DF5557"
+      / //check jeje
+      `;
+
+    let messages = reply2
+      .split("\n")
+      .filter((message: string) => responseParser(message));
+
+    console.log(messages);
     for (const message of messages) {
+      let msg = message;
       if (message.startsWith("/")) {
         const response = await context.intent(message);
-        //console.log("response", response);
-
         if (response && response.message) {
-          let msg = response?.message
-            ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
-            ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
-            ?.replace(/^#+\s*(.*)$/gm, "$1")
-            ?.replace(/`([^`]+)`/g, "$1")
-            ?.replace(/^`|`$/g, "")
-            ?.trim();
-
+          msg = responseParser(response.message);
           chatHistories[sender.address].push({
             role: "system",
             content: msg,
           });
-
-          await context.send(response.message);
         }
-      } else {
-        await context.send(message);
       }
+      await context.send(msg);
     }
   } catch (error) {
     console.error("Error during OpenAI call:", error);

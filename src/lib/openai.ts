@@ -32,14 +32,9 @@ export async function textGeneration(
       role: "assistant",
       content: reply || "No response from OpenAI.",
     });
-    const cleanedReply = reply
-      ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
-      ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
-      ?.replace(/^#+\s*(.*)$/gm, "$1")
-      ?.replace(/`([^`]+)`/g, "$1")
-      ?.replace(/^`|`$/g, "");
+    const cleanedReply = responseParser(reply as string);
 
-    return { reply: cleanedReply as string, history: messages };
+    return { reply: cleanedReply, history: messages };
   } catch (error) {
     console.error("Failed to fetch from OpenAI:", error);
     throw error;
@@ -81,4 +76,15 @@ export async function vision(imageData: Uint8Array, systemPrompt: string) {
     console.error("Failed to interpret image with OpenAI:", error);
     throw error;
   }
+}
+
+export function responseParser(message: string) {
+  const trimmedMessage = message
+    ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
+    ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
+    ?.replace(/^#+\s*(.*)$/gm, "$1")
+    ?.replace(/`([^`]+)`/g, "$1")
+    ?.replace(/^`|`$/g, "")
+    ?.trim();
+  return trimmedMessage;
 }

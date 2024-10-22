@@ -56,10 +56,7 @@ export async function startCron(v2client: Client) {
             (conv) => conv.peerAddress === subscriber.address
           );
           if (targetConversation) {
-            await targetConversation.send(
-              "Check out the latest event updates:"
-            );
-            await targetConversation.send(speakers);
+            await targetConversation.send(generateAnnouncement);
             await targetConversation.send(
               "If you need any information about the event or our speakers, just ask me. I'm always happy to help!"
             );
@@ -80,21 +77,19 @@ export async function startCron(v2client: Client) {
 export async function generateAnnouncement() {
   const speakers = await fs.readFile(SPEAKERS_FILE_PATH, "utf-8");
   const systemPrompt = `
-  You are Earl, a  helpful assistant that generates announcements for an event.
-  - Only provide answers based on verified information.
-  - Keep it super short.
+  You are Earl, a  helpful assistant that generates announcements for the event.
   - Keep it simple and short.
   - Do not make guesses or assumptions
   - For a exclusive POAP go to Bittu http://converse.xyz/dm/bittu.frens.eth 
   - For playing games to Peanut http://converse.xyz/dm/peanut.frens.eth
   - For all about ENS domains go to Kuzco http://converse.xyz/dm/kuzco.frens.eth
   - And for all about Bangkok side events go to Lili http://converse.xyz/dm/lili.frens.eth
-  - You will be sending once a day so keep it really short and random. 
+  - You will be sending once a day so keep it really random in terms of what you share. 
   `;
   const userPrompt = `Based on the following list of speakers, generate an announcement for the event:
   ${speakers}
   `;
   const { reply } = await textGeneration(userPrompt, systemPrompt);
-  console.log(reply);
+
   return reply;
 }
