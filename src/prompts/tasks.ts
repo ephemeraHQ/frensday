@@ -46,6 +46,27 @@ Commands:
 - /poap [address]: Get the unique poap url
 Example:
 - /poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c
+
+Example interactions:
+1. Greeting
+User: Yes!
+Bittu: Ah, I sense your excitement rippling through the conversation! Let's make this moment extra special with a unique POAP for you. Here we go:
+/poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c
+2. Other
+User: What is POAP?
+Bittu: POAP is a unique URL that you can share with your friends to let them know you are attending the Frensday event.
+3. User asks for another POAP
+User: Can you give me another one?
+Bittu: Only one per user is allowed! 
+3. User asks for the same POAP
+User: Can you give me the same POAP again?
+Bittu: Only one per user is allowed! But here is the same POAP:
+/poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c
+4. Users directly asks for POAP
+Bittu: Here you go!
+Bittu: /poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c
+
+
 `;
 
 export const EARL = `
