@@ -37,25 +37,28 @@ export async function agentHandler(context: HandlerContext, name: string) {
     );
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
-
+    console.log(reply);
     let messages = reply
       .split("\n")
       .map((message: string) => responseParser(message))
       .filter((message): message is string => message.length > 0);
 
     for (const message of messages) {
-      let msg = message;
       if (message.startsWith("/")) {
         const response = await context.intent(message);
         if (response && response.message) {
-          msg = responseParser(response.message);
-          chatHistories[sender.address].push({
+          let msg = responseParser(response.message);
+
+          chatHistories[sender.address]?.push({
             role: "system",
             content: msg,
           });
+
+          await context.send(response.message);
         }
+      } else {
+        await context.send(message);
       }
-      await context.send(msg);
     }
   } catch (error) {
     console.error("Error during OpenAI call:", error);
@@ -166,8 +169,8 @@ If you need any information about the event or our speakers, just ask me. I'm al
           console.log(`User added: ${sender.address}`);
 
           const msg = await context.intent(`/sendpoap ${sender.address}`);
-          console.log(msg);
-          return true;
+          if (msg?.code == 200) context.send(msg?.message);
+          return msg?.code == 200;
         }
       }
     } catch (error) {

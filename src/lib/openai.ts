@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { response } from "express";
 dotenv.config();
 
 import OpenAI from "openai";
@@ -80,18 +81,19 @@ export async function vision(imageData: Uint8Array, systemPrompt: string) {
 
 export function responseParser(message: string) {
   let trimmedMessage = message;
+  // Remove bold and underline markdown
   trimmedMessage = trimmedMessage?.replace(/(\*\*|__)(.*?)\1/g, "$2");
+  // Remove markdown links, keeping only the URL
   trimmedMessage = trimmedMessage?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2");
+  // Remove markdown headers
   trimmedMessage = trimmedMessage?.replace(/^#+\s*(.*)$/gm, "$1");
+  // Remove inline code formatting
   trimmedMessage = trimmedMessage?.replace(/`([^`]+)`/g, "$1");
+  // Remove single backticks at the start or end of the message
   trimmedMessage = trimmedMessage?.replace(/^`|`$/g, "");
-  trimmedMessage = trimmedMessage?.replace(/^\s+|\s+$/g, ""); // Remove leading and trailing spaces
-  trimmedMessage = trimmedMessage.trim();
-  // Remove leading and trailing spaces
-  // Replace multiple slashes with a single slash
-  trimmedMessage = trimmedMessage.replace(/\/{2,}/g, "/");
-  // Remove leading slashes
-  trimmedMessage = trimmedMessage.replace(/^\/+/, "");
+  // Remove leading and trailing whitespace
+  trimmedMessage = trimmedMessage?.replace(/^\s+|\s+$/g, "");
+  // Remove any remaining leading or trailing whitespace
   trimmedMessage = trimmedMessage.trim();
   return trimmedMessage;
 }

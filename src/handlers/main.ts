@@ -5,7 +5,6 @@ import { startCron } from "../lib/cron.js";
 import { xmtpClient } from "@xmtp/message-kit";
 import { isBot, isReplyFromBot, getBotAddress } from "../lib/bots.js";
 import { clearChatHistory } from "./agent.js";
-import { handlePoap } from "./poap.js";
 
 const stopWords = ["cancel", "reset", "stop"];
 

@@ -34,7 +34,6 @@ Promise.all([
   await mainHandler(appConfig_BITTU),
 ]);
 
-generateAnnouncement();
 async function setupFiles() {
   if (!fs.existsSync(".data/db.json")) {
     const dbfile = fs.readFileSync("src/data/db.json", "utf8");
