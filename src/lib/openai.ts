@@ -79,12 +79,19 @@ export async function vision(imageData: Uint8Array, systemPrompt: string) {
 }
 
 export function responseParser(message: string) {
-  const trimmedMessage = message
-    ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
-    ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
-    ?.replace(/^#+\s*(.*)$/gm, "$1")
-    ?.replace(/`([^`]+)`/g, "$1")
-    ?.replace(/^`|`$/g, "")
-    ?.trim();
+  let trimmedMessage = message;
+  trimmedMessage = trimmedMessage?.replace(/(\*\*|__)(.*?)\1/g, "$2");
+  trimmedMessage = trimmedMessage?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2");
+  trimmedMessage = trimmedMessage?.replace(/^#+\s*(.*)$/gm, "$1");
+  trimmedMessage = trimmedMessage?.replace(/`([^`]+)`/g, "$1");
+  trimmedMessage = trimmedMessage?.replace(/^`|`$/g, "");
+  trimmedMessage = trimmedMessage?.replace(/^\s+|\s+$/g, ""); // Remove leading and trailing spaces
+  trimmedMessage = trimmedMessage.trim();
+  // Remove leading and trailing spaces
+  // Replace multiple slashes with a single slash
+  trimmedMessage = trimmedMessage.replace(/\/{2,}/g, "/");
+  // Remove leading slashes
+  trimmedMessage = trimmedMessage.replace(/^\/+/, "");
+  trimmedMessage = trimmedMessage.trim();
   return trimmedMessage;
 }

@@ -38,17 +38,11 @@ export async function agentHandler(context: HandlerContext, name: string) {
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
 
-    let reply2 = `
-    Hello there! I'm Bittu, the flexible Jelly. How do you feel about flowing into the world of POAPs today? I've got a unique one just for you! Let me share it with you.
-      /poap 0x5f2d6D97B7cF33DE7DF2d1c0fe26dC68F7DF5557"
-      / //check jeje
-      `;
-
-    let messages = reply2
+    let messages = reply
       .split("\n")
-      .filter((message: string) => responseParser(message));
+      .map((message: string) => responseParser(message))
+      .filter((message): message is string => message.length > 0);
 
-    console.log(messages);
     for (const message of messages) {
       let msg = message;
       if (message.startsWith("/")) {
