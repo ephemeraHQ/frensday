@@ -47,8 +47,6 @@ export async function startCron(v2client: Client) {
       const subscribers = db?.data?.subscribers;
 
       console.log(`Running task. ${subscribers?.length} subscribers.`);
-      const speakers = await fs.readFile(SPEAKERS_FILE_PATH, "utf-8");
-
       for (const subscriber of subscribers) {
         const subscriptionStatus = subscriber.status;
         if (subscriptionStatus === "subscribed") {
