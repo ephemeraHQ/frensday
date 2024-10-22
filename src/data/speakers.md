@@ -23,3 +23,7 @@ josh.box - President / Founder — Intercap / Box Domains
 Devan Mitchem - Global Product & Partnerships — Google Web3
 
 Tascha - Founder & CEO — INFINIT
+
+Matthew Tan - CEO — Etherscan
+
+nickmolnar.eth - CTO — Ephemera

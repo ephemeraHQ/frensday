@@ -6,8 +6,6 @@ import { xmtpClient } from "@xmtp/message-kit";
 import { isBot, isReplyFromBot, getBotAddress } from "../lib/bots.js";
 import { clearChatHistory } from "./agent.js";
 
-const stopWords = ["cancel", "reset", "stop"];
-
 const { v2client: earl } = await xmtpClient({
   privateKey: process.env.KEY_EARL,
 });
@@ -50,19 +48,17 @@ export async function mainHandler(appConfig: Config) {
     } else if (typeId !== "text" && typeId !== "reply") return;
     const lowerContent = text?.toLowerCase();
 
-    if (stopWords.some((word) => lowerContent.includes(word))) {
+    if (lowerContent.startsWith("/reset")) {
       clearChatHistory();
-      context.send("Cleared chat history");
+      context.send("Clearing chat history");
       //remove from group
       const response = await context.intent("/remove");
       const response2 = await context.intent("/unsubscribe");
-      console.log(response, response2);
       if (response && response.message) context.send(response.message);
       if (response2 && response2.message) context.send(response2.message);
 
       return;
-    }
-    if (lowerContent.startsWith("/")) {
+    } else if (lowerContent.startsWith("/")) {
       context.intent(text);
       return;
     } else if (

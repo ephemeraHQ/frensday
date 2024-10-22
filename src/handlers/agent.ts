@@ -1,10 +1,12 @@
 import { HandlerContext, User } from "@xmtp/message-kit";
 import { responseParser } from "../lib/openai.js";
 import { textGeneration } from "../lib/openai.js";
+import { BITTU, EARL, PEANUT, LILI, GENERAL, KUZCO } from "../prompts/tasks.js";
 import fs from "fs";
 import path from "path";
 import { replaceDeeplinks } from "../lib/bots.js";
 import { fileURLToPath } from "url";
+
 let chatHistories: Record<string, any[]> = {};
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,8 +29,11 @@ export async function agentHandler(context: HandlerContext, name: string) {
     const historyKey = `${name}:${sender.address}`;
 
     //Onboarding
-    if (name === "earl" && !group)
-      if (await onboard(context, name, sender)) return;
+    if (name === "earl" && !group) {
+      const onboarded = await onboard(context, name, sender);
+      console.log("Onboarded", onboarded);
+      if (onboarded) return;
+    }
 
     const { reply, history } = await textGeneration(
       userPrompt,
@@ -57,6 +62,7 @@ async function processResponseWithIntent(
     .map((message: string) => responseParser(message))
     .filter((message): message is string => message.length > 0);
 
+  console.log(messages);
   for (const message of messages) {
     if (message.startsWith("/")) {
       const response = await context.intent(message);
@@ -69,38 +75,24 @@ async function processResponseWithIntent(
         });
 
         await context.send(response.message);
-        return chatHistories;
       }
     } else {
       await context.send(message);
-      return chatHistories;
     }
   }
 }
 
 async function getSystemPrompt(name: string, sender: User) {
   //General prompt
-  let generalPrompt = fs.readFileSync(
-    path.resolve(__dirname, `../../src/prompts/general.md`),
-    "utf8"
-  );
+
   //Personality prompt
   const personality = fs.readFileSync(
     path.resolve(__dirname, `../../src/prompts/personalities/${name}.md`),
     "utf8"
   );
 
-  //Task prompt
-  let task = fs.readFileSync(
-    path.resolve(__dirname, `../../src/prompts/tasks/${name}.md`),
-    "utf8"
-  );
-
-  //Modify prompt
-  generalPrompt = replaceValues(generalPrompt, name);
-  task = task.replace("{ADDRESS}", sender.address);
-
-  //Specific data
+  let task = getTasks(name);
+  let generalPrompt = replaceValues(GENERAL, name, sender.address);
 
   if (name === "earl") {
     const speakers = fs.readFileSync(
@@ -122,10 +114,18 @@ async function getSystemPrompt(name: string, sender: User) {
     `\n\n# Personality: You are ${name}\n\n` +
     personality +
     `\n\n# Task\n\n You are ${name}. ${task}`;
+
   return systemPrompt;
 }
 
-function replaceValues(generalPrompt: string, name: string) {
+function getTasks(name: string) {
+  if (name == "bittu") return BITTU;
+  if (name == "earl") return EARL;
+  if (name == "peanut") return PEANUT;
+  if (name == "lili") return LILI;
+  if (name == "kuzco") return KUZCO;
+}
+function replaceValues(generalPrompt: string, name: string, address: string) {
   const bangkokTimezone = "Asia/Bangkok";
   const currentTime = new Date().toLocaleString("en-US", {
     timeZone: bangkokTimezone,
@@ -139,6 +139,7 @@ function replaceValues(generalPrompt: string, name: string) {
   )}`;
   generalPrompt = generalPrompt.replace("{NAME}", name);
   generalPrompt = generalPrompt.replace("{TIME}", time);
+  generalPrompt = generalPrompt.replace("{ADDRESS}", address);
 
   //Return with dev addresses for testing
   if (process.env.NODE_ENV !== "production")
@@ -148,6 +149,7 @@ function replaceValues(generalPrompt: string, name: string) {
 }
 
 export async function clearChatHistory() {
+  console.log("Clearing chat history");
   chatHistories = {};
 }
 
@@ -165,22 +167,25 @@ async function onboard(context: HandlerContext, name: string, sender: User) {
           context.send(
             `Welcome! I'm Earl, and I'm here to assist you with everything frENSday!
 
-Join us in our event group chat: https://frens-day-fabrizioguespe.replit.app/?groupId=${groupId}
+Join us in our event group chat: https://converse.xyz/group/${groupId}
 
 If you need any information about the event or our speakers, just ask me. I'm always happy to help!`
           );
-          const response = await context.intent("/subscribe");
-          console.log(response?.message ?? "");
+          await context.intent("/subscribe");
+          console.log(`User added: ${sender.address}`);
+
           setTimeout(() => {
             context.send(
               "psst... by the way, check with Bittu https://converse.xyz/dm/bittu.frens.eth for a exclusive POAP 😉"
             );
           }, 60000); // 60000 milliseconds = 1 minute
-          console.log(`User added: ${sender.address}`);
 
-          const msg = await context.intent(`/sendpoap ${sender.address}`);
-          if (msg?.code == 200) context.send(msg?.message);
-          return msg?.code == 200;
+          const sendBittu = await context.intent(
+            `/sendbittu ${sender.address}`
+          );
+          console.log("Send Bittu", sendBittu);
+          if (sendBittu?.code == 200) return true;
+          else return false;
         }
       }
     } catch (error) {

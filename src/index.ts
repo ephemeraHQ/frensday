@@ -1,6 +1,5 @@
 import { mainHandler } from "./handlers/main.js";
 import fs from "fs";
-import { generateAnnouncement } from "./lib/cron.js";
 
 setupFiles();
 

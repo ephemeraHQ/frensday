@@ -15,7 +15,7 @@ export async function handlePoap(context: HandlerContext) {
       sender,
     },
   } = context;
-  console.log("sup", command, text);
+
   if (command == "poap" && text == "/poap list") {
     const poapTable = db?.data?.poaps;
     const claimed = poapTable.filter((poap) => poap.Address);
@@ -26,13 +26,6 @@ export async function handlePoap(context: HandlerContext) {
   } else if (command == "poap") {
     // Destructure and validate parameters for the ens command
     const { address } = params;
-
-    if (!address) {
-      await context.send(
-        "Missing required parameters. Please provide address."
-      );
-      return;
-    }
     await db.read();
     const poapTable = db?.data?.poaps;
     const poap = poapTable.find((poap) => poap.Address == address);
@@ -59,7 +52,7 @@ export async function handlePoap(context: HandlerContext) {
         message: `You have already claimed this POAP ${poap?.URL}`,
       };
     }
-  } else if (command == "sendpoap") {
+  } else if (command == "sendbittu") {
     const conversations = await bittu.conversations.list();
 
     let targetConversation = conversations.find(
@@ -71,10 +64,12 @@ export async function handlePoap(context: HandlerContext) {
         sender.address.toLowerCase()
       );
     }
+    await targetConversation.send(
+      "psst, Bittu here. Do you want a exclusive POAP? Just ask me for it."
+    );
     return {
       code: 200,
-      message:
-        "psst, Bittu here. Do you want a exclusive POAP? Just ask me for it.",
+      message: "Bittu sent",
     };
   }
 }

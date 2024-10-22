@@ -17,25 +17,6 @@ interface EnsData {
     eth?: string;
   };
 }
-const chatHistories: Record<string, any[]> = {};
-
-interface EnsData {
-  address?: string;
-  avatar?: string;
-  avatar_small?: string;
-  avatar_url?: string;
-  contentHash?: string;
-  description?: string;
-  ens?: string;
-  ens_primary?: string;
-  github?: string;
-  resolverAddress?: string;
-  twitter?: string;
-  url?: string;
-  wallets?: {
-    eth?: string;
-  };
-}
 
 export async function handleEns(context: HandlerContext) {
   const {
