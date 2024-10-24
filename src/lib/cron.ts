@@ -54,7 +54,8 @@ export async function startCron(v2client: Client) {
             (conv) => conv.peerAddress === subscriber.address
           );
           if (targetConversation) {
-            await targetConversation.send(generateAnnouncement);
+            const announcement = await generateAnnouncement();
+            await targetConversation.send(announcement);
             await targetConversation.send(
               "If you need any information about the event or our speakers, just ask me. I'm always happy to help!"
             );
