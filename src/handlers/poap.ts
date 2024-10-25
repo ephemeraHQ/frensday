@@ -16,15 +16,7 @@ export async function handlePoap(context: HandlerContext) {
     },
   } = context;
 
-  if (command == "poaplist") {
-    await db.read();
-    const poapTable = db?.data?.poaps;
-    const claimed = poapTable.filter((poap) => poap.address);
-    return {
-      code: 200,
-      message: `You have claimed ${claimed.length} POAPs out of ${poapTable.length}`,
-    };
-  } else if (command == "poap") {
+  if (command == "poap") {
     await db.read();
     // Destructure and validate parameters for the ens command
     const { address } = params;
@@ -82,7 +74,6 @@ export async function handlePoap(context: HandlerContext) {
     const claimed = poapTable.find(
       (poap) => poap?.address?.toLowerCase() === address?.toLowerCase()
     );
-    console.log("claimed", address, claimed);
     if (claimed) {
       claimed.address = "";
       await db.write();

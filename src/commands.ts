@@ -3,6 +3,7 @@ import { handleEns } from "./handlers/ens.js";
 import { handlePoap } from "./handlers/poap.js";
 import { handleSubscribe } from "./handlers/subscribe.js";
 import { handleMembers } from "./handlers/members.js";
+import { handleStatus } from "./handlers/status.js";
 
 export const commands: CommandGroup[] = [
   {
@@ -74,9 +75,22 @@ export const commands: CommandGroup[] = [
     ],
   },
   {
+    name: "Status Bot",
+    description: "Get the status of the bot.",
+    triggers: ["/status"],
+    commands: [
+      {
+        command: "/status",
+        handler: handleStatus,
+        description: "Get the status of the bot.",
+        params: {},
+      },
+    ],
+  },
+  {
     name: "Poap Bot",
     description: "Get your POAP.",
-    triggers: ["/poap", "/sendbittu", "/removepoap", "/poaplist"],
+    triggers: ["/poap", "/sendbittu", "/removepoap"],
     commands: [
       {
         command: "/poap [address]",
@@ -87,12 +101,6 @@ export const commands: CommandGroup[] = [
             type: "address",
           },
         },
-      },
-      {
-        command: "/poaplist",
-        handler: handlePoap,
-        description: "List your POAPs.",
-        params: {},
       },
       {
         command: "/sendbittu [address]",
