@@ -45,9 +45,10 @@ export async function handlePoap(context: HandlerContext) {
         };
       }
     } else {
+      //?user_address=${address}`
       return {
         code: 200,
-        message: `You have already claimed this POAP ${poap?.URL}?address=${address}`,
+        message: `You have already claimed this POAP ${poap?.URL}`,
       };
     }
   } else if (command == "sendbittu") {
