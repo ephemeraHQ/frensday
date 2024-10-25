@@ -26,6 +26,7 @@ export async function handleSubscribe(context: HandlerContext) {
       db.data.subscribers = [];
     }
     const subscriber = subscribers?.find((s) => s.address === sender.address);
+    console.log("subscriber", subscriber);
     if (!subscriber) {
       db?.data?.subscribers?.push({
         address: sender.address,
