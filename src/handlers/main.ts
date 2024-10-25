@@ -14,7 +14,6 @@ startCron(earl);
 export async function mainHandler(appConfig: Config) {
   //@ts-ignore
   const { name } = appConfig;
-
   run(async (context: HandlerContext) => {
     const {
       message: {
@@ -50,12 +49,15 @@ export async function mainHandler(appConfig: Config) {
 
     if (lowerContent.startsWith("/reset")) {
       clearChatHistory();
-      context.send("Clearing chat history");
+      context.send("Resetting chat history");
       //remove from group
       const response = await context.intent("/remove");
-      const response2 = await context.intent("/unsubscribe");
       if (response && response.message) context.send(response.message);
+      const response2 = await context.intent("/unsubscribe");
       if (response2 && response2.message) context.send(response2.message);
+
+      const response3 = await context.intent(`/removepoap ${sender.address}`);
+      if (response3 && response3.message) context.send(response3.message);
 
       return;
     } else if (lowerContent.startsWith("/")) {

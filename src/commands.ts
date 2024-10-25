@@ -76,7 +76,7 @@ export const commands: CommandGroup[] = [
   {
     name: "Poap Bot",
     description: "Get your POAP.",
-    triggers: ["/poap", "/sendbittu"],
+    triggers: ["/poap", "/sendbittu", "/removepoap", "/poaplist"],
     commands: [
       {
         command: "/poap [address]",
@@ -89,9 +89,25 @@ export const commands: CommandGroup[] = [
         },
       },
       {
+        command: "/poaplist",
+        handler: handlePoap,
+        description: "List your POAPs.",
+        params: {},
+      },
+      {
         command: "/sendbittu [address]",
         handler: handlePoap,
         description: "Send Bittu to send a DM.",
+        params: {
+          address: {
+            type: "address",
+          },
+        },
+      },
+      {
+        command: "/removepoap [address]",
+        handler: handlePoap,
+        description: "Remove your POAP.",
         params: {
           address: {
             type: "address",

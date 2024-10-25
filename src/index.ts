@@ -1,4 +1,5 @@
 import { mainHandler } from "./handlers/main.js";
+import { botLocalAddresses } from "./lib/bots.js";
 import fs from "fs";
 
 setupFiles();
@@ -25,6 +26,7 @@ const appConfig_BITTU = {
   name: "bittu",
 };
 
+console.log(botLocalAddresses);
 Promise.all([
   await mainHandler(appConfig_KUZCO),
   await mainHandler(appConfig_PEANUT),
@@ -34,9 +36,17 @@ Promise.all([
 ]);
 
 async function setupFiles() {
-  if (!fs.existsSync(".data/db.json")) {
+  if (fs.existsSync("src/data/db-new.json")) {
+    const dbfile = fs.readFileSync("src/data/db-new.json", "utf8");
+    fs.writeFileSync(".data/db.json", dbfile);
+    console.log("DB file created", dbfile);
+    //remove the new from title
+    fs.renameSync("src/data/db-new.json", "src/data/db.json");
+  } else if (!fs.existsSync(".data/db.json")) {
     const dbfile = fs.readFileSync("src/data/db.json", "utf8");
     fs.writeFileSync(".data/db.json", dbfile);
     console.log("DB file created", dbfile);
+  } else {
+    console.log("No DB changes");
   }
 }

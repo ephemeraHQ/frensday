@@ -16,27 +16,31 @@ export async function handlePoap(context: HandlerContext) {
     },
   } = context;
 
-  if (command == "poap" && text == "/poap list") {
+  if (command == "poaplist") {
+    await db.read();
     const poapTable = db?.data?.poaps;
-    const claimed = poapTable.filter((poap) => poap.Address);
+    const claimed = poapTable.filter((poap) => poap.address);
     return {
       code: 200,
       message: `You have claimed ${claimed.length} POAPs out of ${poapTable.length}`,
     };
   } else if (command == "poap") {
+    await db.read();
     // Destructure and validate parameters for the ens command
     const { address } = params;
-    await db.read();
     const poapTable = db?.data?.poaps;
-    const poap = poapTable.find((poap) => poap.Address == address);
+    const poap = poapTable.find((poap) => poap.address == address);
 
     if (!poap) {
-      const emptyPoap = poapTable.find((poap) => !poap.Address);
-      if (emptyPoap) {
-        db?.data?.poaps?.push({ URL: emptyPoap?.URL, Address: address });
+      const newPoap = poapTable.find((poap) => !poap.address);
+      if (newPoap) {
+        db?.data?.poaps?.push({ id: newPoap?.id, address: address });
+        const url = `https://mint.poap.studio/claim-20/${newPoap?.id}?user_address=${address}`;
+        //const url = `https://collectors.POAP.xyz/mint-v2/${newPoap?.id}?address=${address}`;
+        await db.write();
         return {
           code: 200,
-          message: `Here is your POAP ${emptyPoap?.URL}?address=${address}`,
+          message: `Here is your POAP ${url}`,
         };
       } else {
         return {
@@ -44,11 +48,11 @@ export async function handlePoap(context: HandlerContext) {
           message: "No more POAPs available",
         };
       }
-    } else {
-      //?user_address=${address}`
+    } else if (poap) {
+      const url = `https://collectors.POAP.xyz/mint-v2/${poap?.id}`;
       return {
         code: 200,
-        message: `You have already claimed this POAP ${poap?.URL}`,
+        message: `You have already claimed this POAP ${url}`,
       };
     }
   } else if (command == "sendbittu") {
@@ -69,6 +73,28 @@ export async function handlePoap(context: HandlerContext) {
     return {
       code: 200,
       message: "Bittu sent",
+    };
+  } else if (command == "removepoap") {
+    await db.read();
+    const { address } = params;
+    const poapTable = db?.data?.poaps;
+    console.log("poapTable", poapTable);
+    const claimed = poapTable.find(
+      (poap) => poap?.address?.toLowerCase() === address?.toLowerCase()
+    );
+    console.log("claimed", address, claimed);
+    if (claimed) {
+      claimed.address = "";
+      await db.write();
+    } else {
+      return {
+        code: 400,
+        message: "No POAP found for this address",
+      };
+    }
+    return {
+      code: 200,
+      message: `Your poap ${claimed?.id} has been removed`,
     };
   }
 }
