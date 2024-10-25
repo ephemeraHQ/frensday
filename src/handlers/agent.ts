@@ -178,7 +178,7 @@ If you need any information about the event or our speakers, just ask me. I'm al
             context.send(
               "psst... by the way, check with Bittu https://converse.xyz/dm/bittu.frens.eth for a exclusive POAP 😉"
             );
-          }, 60000); // 60000 milliseconds = 1 minute
+          }, 30000); // 30000 milliseconds = 30 seconds
 
           const sendBittu = await context.intent(
             `/sendbittu ${sender.address}`

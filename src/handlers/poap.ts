@@ -34,10 +34,9 @@ export async function handlePoap(context: HandlerContext) {
       const emptyPoap = poapTable.find((poap) => !poap.Address);
       if (emptyPoap) {
         db?.data?.poaps?.push({ URL: emptyPoap?.URL, Address: address });
-        //?user_address=${address}`
         return {
           code: 200,
-          message: `Here is your POAP ${emptyPoap?.URL}`,
+          message: `Here is your POAP ${emptyPoap?.URL}?address=${address}`,
         };
       } else {
         return {
@@ -46,10 +45,9 @@ export async function handlePoap(context: HandlerContext) {
         };
       }
     } else {
-      //?user_address=${address}`
       return {
         code: 200,
-        message: `You have already claimed this POAP ${poap?.URL}`,
+        message: `You have already claimed this POAP ${poap?.URL}?address=${address}`,
       };
     }
   } else if (command == "sendbittu") {
