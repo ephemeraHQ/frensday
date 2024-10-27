@@ -1,52 +1,48 @@
 import { mainHandler } from "./handlers/main.js";
-import { botLocalAddresses } from "./lib/bots.js";
+import { botAddresses } from "./lib/bots.js";
 import fs from "fs";
 
+// ASCII art logo for FRENSDAY
+const frensdayLogo = `\x1b[38;2;56;136;255m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+███████╗██████╗ ███████╗███╗   ██╗███████╗██████╗  █████╗ ██╗   ██╗
+██╔════╝██╔══██╗██╔════╝████╗  ██║██╔════╝██╔══██╗██╔══██╗╚██╗ ██╔╝
+█████╗  ██████╔╝█████╗  ██╔██╗ ██║███████╗██║  ██║███████║ ╚████╔╝ 
+██╔══╝  ██╔══██╗██╔══╝  ██║╚██╗██║╚════██║██║  ██║██╔══██║  ╚██╔╝  
+██║     ██║  ██║███████╗██║ ╚████║███████║██████╔╝██║  ██║   ██║   
+╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚══════╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   
+\x1b[38;2;250;105;119m\Powered by MessageKit \x1b[0m`;
+
+console.log(frensdayLogo);
+const isDeployed = process.env.NODE_ENV === "production";
+console.log(
+  botAddresses
+    .map(
+      (a) => `
+  Send a message to ${
+    a.terminalColor
+  }${a.name.toUpperCase()}\x1b[0m on Converse:                              
+  🔗 https://converse.xyz/dm/${isDeployed ? a.address : a.devAddress}`
+    )
+    .join("\n")
+);
+console.log("\n\nStatus:\n   - Characters initialized");
 setupFiles();
 
-// App configuration
-const appConfig_KUZCO = {
-  privateKey: process.env.KEY_KUZCO,
-  name: "kuzco",
-};
-const appConfig_PEANUT = {
-  privateKey: process.env.KEY_PEANUT,
-  name: "peanut",
-};
-const appConfig_LILI = {
-  privateKey: process.env.KEY_LILI,
-  name: "lili",
-};
-const appConfig_EARL = {
-  privateKey: process.env.KEY_EARL,
-  name: "earl",
-};
-const appConfig_BITTU = {
-  privateKey: process.env.KEY_BITTU,
-  name: "bittu",
-};
-
-console.log(botLocalAddresses);
-Promise.all([
-  await mainHandler(appConfig_KUZCO),
-  await mainHandler(appConfig_PEANUT),
-  await mainHandler(appConfig_LILI),
-  await mainHandler(appConfig_EARL),
-  await mainHandler(appConfig_BITTU),
-]);
+Promise.all(botAddresses.map(async (bot) => await mainHandler(bot)));
 
 async function setupFiles() {
   if (fs.existsSync("src/data/db-new.json")) {
     const dbfile = fs.readFileSync("src/data/db-new.json", "utf8");
     fs.writeFileSync(".data/db.json", dbfile);
-    console.log("DB file created", dbfile);
     //remove the new from title
     fs.renameSync("src/data/db-new.json", "src/data/db.json");
   } else if (!fs.existsSync(".data/db.json")) {
     const dbfile = fs.readFileSync("src/data/db.json", "utf8");
     fs.writeFileSync(".data/db.json", dbfile);
-    console.log("DB file created", dbfile);
+    console.log(`   - DB file created`);
   } else {
-    console.log("No DB changes");
+    console.log(`   - No DB changes`);
   }
 }

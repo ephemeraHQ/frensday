@@ -7,18 +7,12 @@ import { handleStatus } from "./handlers/status.js";
 
 export const commands: CommandGroup[] = [
   {
-    name: "Characters Groups",
-    triggers: ["@earl", "@earl", "@bittu", "@lili", "@peanut", "@kuzco"],
-    description: "Talk to the characters.",
-    commands: [],
-  },
-  {
     name: "Subscribe",
     description: "Subscribe to updates.",
-    triggers: ["/subscribe", "/unsubscribe"],
     commands: [
       {
         command: "/subscribe [address]",
+        triggers: ["/subscribe", "/unsubscribe", "@earl"],
         handler: handleSubscribe,
         description: "Subscribe to updates.",
         params: {
@@ -29,6 +23,7 @@ export const commands: CommandGroup[] = [
       },
       {
         command: "/unsubscribe [address]",
+        triggers: ["/subscribe", "/unsubscribe", "@earl"],
         handler: handleSubscribe,
         description: "Unsubscribe to updates.",
         params: {
@@ -42,29 +37,36 @@ export const commands: CommandGroup[] = [
   {
     name: "Group Bot",
     description: "Get the group ID.",
-    triggers: ["/id", "/add", "/remove", "/exists"],
     commands: [
       {
         command: "/add",
+        adminOnly: true,
         handler: handleMembers,
+        triggers: ["/id", "/add", "/remove", "/exists", "@earl"],
         description: "Add yourself to the group.",
         params: {},
       },
       {
         command: "/remove",
+        adminOnly: true,
         handler: handleMembers,
+        triggers: ["/id", "/add", "/remove", "/exists", "@earl"],
         description: "Remove yourself from the group.",
         params: {},
       },
       {
         command: "/id",
+        adminOnly: true,
         handler: handleMembers,
+        triggers: ["/id", "/add", "/remove", "/exists", "@earl"],
         description: "Get the group ID.",
         params: {},
       },
       {
         command: "/exists [address]",
+        adminOnly: true,
         handler: handleSubscribe,
+        triggers: ["/id", "/add", "/remove", "/exists", "@earl"],
         description: "Check if an address is onboarded.",
         params: {
           address: {
@@ -72,15 +74,10 @@ export const commands: CommandGroup[] = [
           },
         },
       },
-    ],
-  },
-  {
-    name: "Status Bot",
-    description: "Get the status of the bot.",
-    triggers: ["/status"],
-    commands: [
       {
         command: "/status",
+        adminOnly: true,
+        triggers: ["/status", "@earl"],
         handler: handleStatus,
         description: "Get the status of the bot.",
         params: {},
@@ -88,58 +85,12 @@ export const commands: CommandGroup[] = [
     ],
   },
   {
-    name: "Poap Bot",
-    description: "Get your POAP.",
-    triggers: ["/poap", "/sendbittu", "/removepoap"],
-    commands: [
-      {
-        command: "/poap [address]",
-        handler: handlePoap,
-        description: "Get your POAP.",
-        params: {
-          address: {
-            type: "address",
-          },
-        },
-      },
-      {
-        command: "/sendbittu [address]",
-        handler: handlePoap,
-        description: "Send Bittu to send a DM.",
-        params: {
-          address: {
-            type: "address",
-          },
-        },
-      },
-      {
-        command: "/removepoap [address]",
-        handler: handlePoap,
-        description: "Remove your POAP.",
-        params: {
-          address: {
-            type: "address",
-          },
-        },
-      },
-    ],
-  },
-  {
     name: "Ens Domain Bot",
     description: "Register ENS domains.",
-    triggers: [
-      "/ens",
-      "@ens",
-      "@ensbot",
-      "/help",
-      "/register",
-      "/check",
-      "/info",
-      "/renew",
-    ],
     commands: [
       {
         command: "/register [domain]",
+        triggers: ["/register", "@kuzco"],
         handler: handleEns,
         description: "Register a domain.",
         params: {
@@ -150,6 +101,7 @@ export const commands: CommandGroup[] = [
       },
       {
         command: "/info [domain]",
+        triggers: ["/info", "@kuzco"],
         handler: handleEns,
         description: "Get information about a domain.",
         params: {
@@ -160,6 +112,7 @@ export const commands: CommandGroup[] = [
       },
       {
         command: "/renew [domain]",
+        triggers: ["/renew", "@kuzco"],
         handler: handleEns,
         description: "Renew a domain.",
         params: {
@@ -170,17 +123,58 @@ export const commands: CommandGroup[] = [
       },
       {
         command: "/help",
+        triggers: ["/help", "@kuzco"],
         handler: undefined,
         description: "Get help with the bot.",
         params: {},
       },
       {
         command: "/check [domain]",
+        triggers: ["/check", "@kuzco"],
         handler: handleEns,
         description: "Check if a domain is available.",
         params: {
           domain: {
             type: "string",
+          },
+        },
+      },
+    ],
+  },
+  {
+    name: "Poap Bot",
+    description: "Get your POAP.",
+    commands: [
+      {
+        command: "/poap [address]",
+        triggers: ["/poap", "/sendbittu", "/removepoap"],
+        handler: handlePoap,
+        description: "Get your POAP.",
+        params: {
+          address: {
+            type: "address",
+          },
+        },
+      },
+      {
+        command: "/sendbittu [address]",
+        triggers: ["/poap", "/sendbittu", "/removepoap"],
+        handler: handlePoap,
+        description: "Send Bittu to send a DM.",
+        params: {
+          address: {
+            type: "address",
+          },
+        },
+      },
+      {
+        command: "/removepoap [address]",
+        triggers: ["/poap", "/sendbittu", "/removepoap"],
+        handler: handlePoap,
+        description: "Remove your POAP.",
+        params: {
+          address: {
+            type: "address",
           },
         },
       },

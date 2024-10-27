@@ -31,7 +31,6 @@ export async function agentHandler(context: HandlerContext, name: string) {
     //Onboarding
     if (name === "earl" && !group) {
       const onboarded = await onboard(context, name, sender);
-      console.log("Onboarded", onboarded);
       if (onboarded) return;
     }
 
@@ -62,7 +61,6 @@ async function processResponseWithIntent(
     .map((message: string) => responseParser(message))
     .filter((message): message is string => message.length > 0);
 
-  console.log(messages);
   for (const message of messages) {
     if (message.startsWith("/")) {
       const response = await context.intent(message);
@@ -148,9 +146,10 @@ function replaceValues(generalPrompt: string, name: string, address: string) {
   return generalPrompt;
 }
 
-export async function clearChatHistory() {
+export async function clearChatHistory(address?: string) {
   console.log("Clearing chat history");
-  chatHistories = {};
+  if (address) chatHistories[address] = [];
+  else chatHistories = {};
 }
 
 async function onboard(context: HandlerContext, name: string, sender: User) {
@@ -158,6 +157,7 @@ async function onboard(context: HandlerContext, name: string, sender: User) {
     try {
       const exists = await context.intent(`/exists ${sender.address}`);
       if (exists?.code == 400) {
+        clearChatHistory(sender.address);
         const response2 = await context.intent("/add");
         console.log("Adding to group", response2);
         // Sleep for 30 seconds

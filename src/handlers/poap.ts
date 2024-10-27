@@ -1,14 +1,15 @@
 import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
+import { clearChatHistory } from "./agent.js";
+
 await db.read();
 
 const { v2client: bittu } = await xmtpClient({
   privateKey: process.env.KEY_BITTU,
+  hideLog: true,
 });
 
 export async function handlePoap(context: HandlerContext) {
-  //@ts-ignore
-  const { name } = context;
   const {
     message: {
       content: { content: text, command, params },
@@ -16,6 +17,10 @@ export async function handlePoap(context: HandlerContext) {
     },
   } = context;
 
+  //const url = `https://mint.poap.studio/claim-20/${newPoap?.id}`;
+  //const url = `https://collectors.POAP.xyz/mint-v2/${newPoap?.id}?address=${address}`;
+
+  const url = `https://dev.converse.xyz/poap/`;
   if (command == "poap") {
     await db.read();
     // Destructure and validate parameters for the ens command
@@ -27,24 +32,25 @@ export async function handlePoap(context: HandlerContext) {
       const newPoap = poapTable.find((poap) => !poap.address);
       if (newPoap) {
         db?.data?.poaps?.push({ id: newPoap?.id, address: address });
-        const url = `https://mint.poap.studio/claim-20/${newPoap?.id}?user_address=${address}`;
-        //const url = `https://collectors.POAP.xyz/mint-v2/${newPoap?.id}?address=${address}`;
+
         await db.write();
+        clearChatHistory(sender.address);
         return {
           code: 200,
-          message: `Here is your POAP ${url}`,
+          message: `Here is your POAP \n${url}${newPoap?.id}?user_address=${address}`,
         };
       } else {
+        clearChatHistory(sender.address);
         return {
           code: 200,
           message: "No more POAPs available",
         };
       }
     } else if (poap) {
-      const url = `https://collectors.POAP.xyz/mint-v2/${poap?.id}`;
+      clearChatHistory(sender.address);
       return {
         code: 200,
-        message: `You have already claimed this POAP ${url}`,
+        message: `You have already claimed this POAP \n${url}${poap?.id}`,
       };
     }
   } else if (command == "sendbittu") {
@@ -62,6 +68,7 @@ export async function handlePoap(context: HandlerContext) {
     await targetConversation.send(
       "psst, Bittu here. Do you want a exclusive POAP? Just ask me for it."
     );
+    clearChatHistory(sender.address);
     return {
       code: 200,
       message: "Bittu sent",
@@ -70,7 +77,6 @@ export async function handlePoap(context: HandlerContext) {
     await db.read();
     const { address } = params;
     const poapTable = db?.data?.poaps;
-    console.log("poapTable", poapTable);
     const claimed = poapTable.find(
       (poap) => poap?.address?.toLowerCase() === address?.toLowerCase()
     );

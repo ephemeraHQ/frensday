@@ -29,7 +29,6 @@ export async function startCron(v2client: Client) {
     console.log("Speakers file doesn't exist. Creating it for the first time.");
     await saveSpeakersToFile();
   }
-  // Cron job to fetch and save speakers every 10 minutes
   cron.schedule("*/10 * * * *", async () => {
     console.log("Fetching and saving speakers");
     await saveSpeakersToFile();
@@ -37,8 +36,11 @@ export async function startCron(v2client: Client) {
   await db.read();
   const subscribers = db?.data?.subscribers;
   console.log(
-    `Cron job to fetch and save speakers every 10 minutes and send updates to ${subscribers?.length} subscribers`
+    `   - Cron job started to fetch speakers every 10 minutes\n   - Earl will send updates to ${subscribers?.length} subscribers every 2 days`
   );
+
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Logging new messages to console ↴`);
   // Cron job to send updates once a day at midnight UTC
   cron.schedule(
     "0 0 */2 * *", // Every 2 days at midnight UTC
