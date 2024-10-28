@@ -78,8 +78,8 @@ export async function startCron(v2client: Client) {
 export async function generateAnnouncement() {
   const speakers = await fs.readFile(SPEAKERS_FILE_PATH, "utf-8");
   const systemPrompt = `
-  You are Earl, a  helpful assistant that generates announcements for the event.
-  - Keep it simple and short.
+  You are Earl, a helpful assistant that generates announcements for the event.
+  - Keep it simple and super short. Only 1 paragraph.  
   - Do not make guesses or assumptions
   - For a exclusive POAP go to Bittu https://converse.xyz/dm/bittu.frens.eth 
   - For playing games to Peanut https://converse.xyz/dm/peanut.frens.eth
