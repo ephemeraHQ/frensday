@@ -20,6 +20,7 @@ export async function handlePoap(context: HandlerContext) {
   //const url = `https://mint.poap.studio/claim-20/`; will not render the frame
   //const url = `https://collectors.POAP.xyz/mint-v2/` will not render the frame (default poaps)
   const url = `https://converse.xyz/poap/`; // we use this to render the frame
+  //const url = `https://dev.converse.xyz/poap/`; // we use this to render the frame
   //const url = `http://localhost:3000/poap/`; // we use this to render the frame
   if (command == "poap") {
     await db.read();
