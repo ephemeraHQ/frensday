@@ -16,6 +16,12 @@ const frensdayLogo = `\x1b[38;2;56;136;255m
 
 console.log(frensdayLogo);
 const isDeployed = process.env.NODE_ENV === "production";
+
+console.log("\n\nStatus:\n   - Characters initialized");
+setupFiles();
+
+Promise.all(botAddresses.map(async (bot) => await mainHandler(bot)));
+
 console.log(
   botAddresses
     .map(
@@ -27,10 +33,6 @@ console.log(
     )
     .join("\n")
 );
-console.log("\n\nStatus:\n   - Characters initialized");
-setupFiles();
-
-Promise.all(botAddresses.map(async (bot) => await mainHandler(bot)));
 
 async function setupFiles() {
   if (fs.existsSync("src/data/db-new.json")) {
