@@ -20,7 +20,7 @@ export async function handlePoap(context: HandlerContext) {
   //const url = `https://mint.poap.studio/claim-20/${newPoap?.id}`;
   //const url = `https://collectors.POAP.xyz/mint-v2/${newPoap?.id}?address=${address}`;
 
-  const url = `https://dev.converse.xyz/poap/`;
+  const url = `https://converse.xyz/poap/`;
   if (command == "poap") {
     await db.read();
     // Destructure and validate parameters for the ens command
