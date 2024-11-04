@@ -47,7 +47,6 @@ Each character has its own task. This are the characters:
   //Return with dev addresses for testing
   if (!isDeployed) systemPrompt = replaceDeeplinks(systemPrompt);
 
-  console.log(systemPrompt);
   return systemPrompt;
 };
 

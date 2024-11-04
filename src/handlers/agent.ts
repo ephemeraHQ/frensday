@@ -31,6 +31,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
         context?.send(
           "Hey there! Give me a sec while I fetch info about you first..."
         );
+        console.log("Onboarding", userInfo);
         const onboarded = await onboard(
           context,
           userInfo.preferredName ?? "Friend",

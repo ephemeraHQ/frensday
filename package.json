@@ -8,7 +8,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@xmtp/message-kit": "^1.1.5-beta.14",
+    "@xmtp/message-kit": "^1.1.5-beta.15",
     "dotenv": "^16.4.5",
     "lowdb": "^7.0.1",
     "node-cron": "^3.0.3",
