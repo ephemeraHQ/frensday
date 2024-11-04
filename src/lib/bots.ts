@@ -1,4 +1,9 @@
-const isDeployed = process.env.NODE_ENV === "production";
+export const isDeployed = process.env.NODE_ENV === "production";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function getBotName(address: string) {
   return botAddresses.find(
@@ -6,21 +11,20 @@ export async function getBotName(address: string) {
       (isDeployed ? bot.address : bot.devAddress) === address.toLowerCase()
   )?.name;
 }
+export function getTimeZone() {
+  const bangkokTimezone = "Asia/Bangkok";
+  const currentTime = new Date().toLocaleString("en-US", {
+    timeZone: bangkokTimezone,
+  });
 
-export async function isReplyFromBot(
-  chain: any,
-  userPrompt: string,
-  name: string
-) {
-  if (userPrompt.includes("@" + name)) return true;
-  const botAddress = getBotAddress(name);
-  if (!botAddress) return false;
-
-  return chain.some(
-    (c: any) => c.address.toLowerCase() == botAddress.toLowerCase()
-  );
+  const time = `Current time in Bangkok: ${currentTime} - ${new Date().toLocaleDateString(
+    "en-US",
+    {
+      weekday: "long",
+    }
+  )}`;
+  return time;
 }
-
 export const getBotAddress = (name: string) => {
   if (botAddresses) {
     return botAddresses.find(
@@ -38,6 +42,7 @@ export type BotAddress = {
   terminalColor: string;
   domain: string;
   privateKey: string;
+  hideInitLogMessage: boolean;
 };
 export const botAddresses: BotAddress[] = [
   {
@@ -48,6 +53,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;26;170;255m",
     domain: "earl.frens.eth",
     privateKey: process.env.KEY_EARL as string,
+    hideInitLogMessage: true,
   },
   {
     name: "lili",
@@ -57,6 +63,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;1;152;80m",
     domain: "lili.frens.eth",
     privateKey: process.env.KEY_LILI as string,
+    hideInitLogMessage: true,
   },
   {
     name: "bittu",
@@ -66,6 +73,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;247;160;239m",
     domain: "bittu.frens.eth",
     privateKey: process.env.KEY_BITTU as string,
+    hideInitLogMessage: true,
   },
   {
     name: "kuzco",
@@ -75,6 +83,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;246;106;31m",
     domain: "kuzco.frens.eth",
     privateKey: process.env.KEY_KUZCO as string,
+    hideInitLogMessage: true,
   },
   {
     name: "peanut",
@@ -84,6 +93,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;245;79;0m",
     domain: "peanut.frens.eth",
     privateKey: process.env.KEY_PEANUT as string,
+    hideInitLogMessage: true,
   },
 ];
 
@@ -96,25 +106,51 @@ export function isBot(address: string) {
 }
 
 export function replaceDeeplinks(generalPrompt: string) {
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "kuzco.frens.eth",
     getBotAddress("kuzco") || ""
   );
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "lili.frens.eth",
     getBotAddress("lili") || ""
   );
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "peanut.frens.eth",
     getBotAddress("peanut") || ""
   );
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "bittu.frens.eth",
     getBotAddress("bittu") || ""
   );
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "earl.frens.eth",
     getBotAddress("earl") || ""
   );
   return generalPrompt;
 }
+
+export const specificInfo = (name: string) => {
+  let specificInfo = "";
+  if (name === "earl") {
+    const speakers = fs.readFileSync(
+      path.resolve(__dirname, "../../src/data/speakers.md"),
+      "utf8"
+    );
+    specificInfo += "\n\n### Speakers\n\n" + speakers;
+  } else if (name === "lili") {
+    const thailand = fs.readFileSync(
+      path.resolve(__dirname, "../../src/data/thailand.csv"),
+      "utf8"
+    );
+    specificInfo += "\n\n### Thailand\n\n" + thailand;
+  }
+  return specificInfo;
+};
+
+export const getPersonality = (name: string) => {
+  const personality = fs.readFileSync(
+    path.resolve(__dirname, `../../src/personalities/${name}.md`),
+    "utf8"
+  );
+  return `\n\n# Personality: You are ${name}\n\n` + personality;
+};

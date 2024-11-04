@@ -1,24 +1,72 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
+import { clearMemory } from "../lib/gpt.js";
+import { clearInfoCache } from "../lib/resolver.js";
 
 const groupId = process.env.GROUP_ID as string;
 export async function handleMembers(context: HandlerContext) {
   const {
     message: {
-      content: { content: text, command, params },
+      content: { command },
       sender,
     },
     group,
     client,
   } = context;
 
-  if (group && command == "id") {
+  await db.read();
+
+  if (command == "reset") {
+    clearChatHistory();
+    context.send("Resetting chat history");
+    //remove from group
+    const response = await context.skill("/remove");
+    if (response && response.message) context.send(response.message);
+    const response2 = await context.skill("/unsubscribe");
+    if (response2 && response2.message) context.send(response2.message);
+
+    const response3 = await context.skill(`/removepoap ${sender.address}`);
+    if (response3 && response3.message) context.send(response3.message);
+
+    return;
+  } else if (command == "unsubscribe") {
+    const subscribers = db?.data?.subscribers;
+    const subscriber = subscribers?.find((s) => s.address === sender.address);
+    if (subscriber) {
+      subscriber.status = "unsubscribed";
+    }
+    await db.write();
+    return {
+      code: 200,
+      message: "You have been unsubscribed from updates.",
+    };
+  } else if (command == "subscribe") {
+    const subscribers = db?.data?.subscribers;
+    if (!subscribers) {
+      db.data.subscribers = [];
+    }
+    const subscriber = subscribers?.find((s) => s.address === sender.address);
+    if (!subscriber) {
+      db?.data?.subscribers?.push({
+        address: sender.address,
+        status: "subscribed",
+      });
+      await db.write();
+
+      return {
+        code: 200,
+        message: "📣 You have been subscribed to updates.",
+      };
+    }
+    return {
+      code: 400,
+      message: "Error subscribing to updates.",
+    };
+  } else if (group && command == "id") {
     console.log(group.id);
     return;
   } else if (command == "add") {
-    await db.read();
     const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
     );
@@ -38,7 +86,6 @@ export async function handleMembers(context: HandlerContext) {
       message: "You are already in the group",
     };
   } else if (command == "remove") {
-    await db.read();
     const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
     );
@@ -71,7 +118,7 @@ export async function handleMembers(context: HandlerContext) {
     };
   } else if (command == "exists") {
     const subscribers = db?.data?.subscribers;
-    const subscriber = subscribers?.find((s) => s.address === params.address);
+    const subscriber = subscribers?.find((s) => s.address === sender.address);
     if (subscriber) {
       return {
         code: 200,
@@ -83,5 +130,22 @@ export async function handleMembers(context: HandlerContext) {
         message: "Address was not onboarded",
       };
     }
+  } else if (command == "status") {
+    await db.read();
+    const poapTable = db?.data?.poaps;
+    const claimed = poapTable.filter((poap) => poap.address);
+    const subscribers = db?.data?.subscribers;
+    const onboarded = subscribers.filter((subscriber) => subscriber.address);
+    const subscribed = onboarded.filter(
+      (subscriber) => subscriber.status === "subscribed"
+    );
+    context.send(
+      `This is how frENSday is going:\n ${claimed.length} POAPs claimed out of ${poapTable.length}\n ${onboarded.length} users onboarded\n ${subscribed.length} users subscribed`
+    );
   }
+}
+
+export async function clearChatHistory(address?: string) {
+  clearMemory();
+  clearInfoCache();
 }

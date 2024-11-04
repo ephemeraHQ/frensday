@@ -1,48 +1,53 @@
-import { HandlerContext, User } from "@xmtp/message-kit";
-import { responseParser } from "../lib/openai.js";
-import { textGeneration } from "../lib/openai.js";
-import { BITTU, EARL, PEANUT, LILI, GENERAL, KUZCO } from "../prompts/tasks.js";
-import fs from "fs";
-import path from "path";
-import { replaceDeeplinks } from "../lib/bots.js";
-import { fileURLToPath } from "url";
-
-let chatHistories: Record<string, any[]> = {};
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { HandlerContext } from "@xmtp/message-kit";
+import { textGeneration, processMultilineResponse } from "../lib/gpt.js";
+import { getUserInfo } from "../lib/resolver.js";
+import { system_prompt } from "../prompt.js";
+import { getBotAddress } from "../lib/bots.js";
 
 export async function agentHandler(context: HandlerContext, name: string) {
   if (!process?.env?.OPEN_AI_API_KEY) {
     console.log("No OPEN_AI_API_KEY found in .env");
     return;
   }
-
   const {
     message: {
-      content: { content: userPrompt },
+      content: { content, params },
       sender,
     },
-    group,
+    skill,
   } = context;
   try {
-    const historyKey = `${name}:${sender.address}`;
-
+    const userInfo = await getUserInfo(sender.address);
+    if (!userInfo) {
+      console.log("User info not found");
+      return;
+    }
+    let userPrompt = params?.prompt ?? content;
+    let systemPrompt = system_prompt(name, userInfo);
     //Onboarding
-    if (name === "earl" && !group) {
-      const onboarded = await onboard(context, name, sender);
-      if (onboarded) return;
+    if (name === "earl") {
+      const exists = await skill(`/exists`);
+      if (exists?.code == 400) {
+        context?.send(
+          "Hey there! Give me a sec while I fetch info about you first..."
+        );
+        console.log("Onboarding", userInfo);
+        const onboarded = await onboard(
+          context,
+          userInfo.preferredName ?? "Friend",
+          sender.address
+        );
+        if (onboarded) return;
+      }
     }
 
-    const { reply, history } = await textGeneration(
+    const { reply } = await textGeneration(
+      `${name}:${sender.address}`,
       userPrompt,
-      await getSystemPrompt(name, sender),
-      chatHistories[historyKey]
+      systemPrompt
     );
 
-    if (!group) chatHistories[historyKey] = history; // Update chat history for the user
-
-    await processResponseWithIntent(reply, context, sender.address);
+    await processMultilineResponse(sender.address, reply, context);
   } catch (error) {
     console.error("Error during OpenAI call:", error);
     await context.send(
@@ -51,146 +56,39 @@ export async function agentHandler(context: HandlerContext, name: string) {
   }
 }
 
-async function processResponseWithIntent(
-  reply: string,
-  context: any,
+async function onboard(
+  context: HandlerContext,
+  name: string,
   senderAddress: string
 ) {
-  let messages = reply
-    .split("\n")
-    .map((message: string) => responseParser(message))
-    .filter((message): message is string => message.length > 0);
+  try {
+    const response2 = await context.skill("/add");
+    console.log("Adding to group", response2);
+    // Sleep for 30 seconds
+    const groupId = process.env.GROUP_ID;
+    if (response2?.code == 200) {
+      //onboard message
+      context.send(
+        `Welcome ${name}! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`
+      );
+      await context.skill(`/subscribe ${senderAddress}`);
+      console.log(`User added: ${senderAddress}`);
 
-  for (const message of messages) {
-    if (message.startsWith("/")) {
-      const response = await context.intent(message);
-      if (response && response.message) {
-        let msg = responseParser(response.message);
+      setTimeout(() => {
+        context.send(
+          `psst... by the way, check with Bittu https://converse.xyz/dm/${getBotAddress(
+            "bittu"
+          )} for a exclusive POAP 😉`
+        );
+      }, 30000); // 30000 milliseconds = 30 seconds
 
-        chatHistories[senderAddress]?.push({
-          role: "system",
-          content: msg,
-        });
-
-        await context.send(response.message);
-      }
-    } else {
-      await context.send(message);
+      const sendBittu = await context.skill(`/sendbittu ${senderAddress}`);
+      console.log("Send Bittu", sendBittu);
+      if (sendBittu?.code == 200) return true;
+      else return false;
     }
-  }
-}
-
-async function getSystemPrompt(name: string, sender: User) {
-  //General prompt
-
-  //Personality prompt
-  const personality = fs.readFileSync(
-    path.resolve(__dirname, `../../src/prompts/personalities/${name}.md`),
-    "utf8"
-  );
-
-  let task = getTasks(name);
-  let generalPrompt = replaceValues(GENERAL, name, sender.address);
-
-  if (name === "earl") {
-    const speakers = fs.readFileSync(
-      path.resolve(__dirname, "../../src/data/speakers.md"),
-      "utf8"
-    );
-
-    task = task + "\n\n### Speakers\n\n" + speakers;
-  } else if (name === "lili") {
-    const thailand = fs.readFileSync(
-      path.resolve(__dirname, "../../src/data/thailand.csv"),
-      "utf8"
-    );
-    task = task + "\n\n### Thailand\n\n" + thailand;
-  }
-
-  const systemPrompt =
-    generalPrompt +
-    `\n\n# Personality: You are ${name}\n\n` +
-    personality +
-    `\n\n# Task\n\n You are ${name}. ${task}`;
-
-  return systemPrompt;
-}
-
-function getTasks(name: string) {
-  if (name == "bittu") return BITTU;
-  if (name == "earl") return EARL;
-  if (name == "peanut") return PEANUT;
-  if (name == "lili") return LILI;
-  if (name == "kuzco") return KUZCO;
-}
-function replaceValues(generalPrompt: string, name: string, address: string) {
-  const bangkokTimezone = "Asia/Bangkok";
-  const currentTime = new Date().toLocaleString("en-US", {
-    timeZone: bangkokTimezone,
-  });
-
-  const time = `Current time in Bangkok: ${currentTime} - ${new Date().toLocaleDateString(
-    "en-US",
-    {
-      weekday: "long",
-    }
-  )}`;
-  generalPrompt = generalPrompt.replace("{NAME}", name);
-  generalPrompt = generalPrompt.replace("{TIME}", time);
-  generalPrompt = generalPrompt.replace("{ADDRESS}", address);
-
-  //Return with dev addresses for testing
-  if (process.env.NODE_ENV !== "production")
-    generalPrompt = replaceDeeplinks(generalPrompt);
-
-  return generalPrompt;
-}
-
-export async function clearChatHistory(address?: string) {
-  console.log("Clearing chat history");
-  if (address) chatHistories[address] = [];
-  else chatHistories = {};
-}
-
-async function onboard(context: HandlerContext, name: string, sender: User) {
-  if (name === "earl") {
-    try {
-      const exists = await context.intent(`/exists ${sender.address}`);
-      if (exists?.code == 400) {
-        clearChatHistory(sender.address);
-        const response2 = await context.intent("/add");
-        console.log("Adding to group", response2);
-        // Sleep for 30 seconds
-        const groupId = process.env.GROUP_ID;
-        if (response2?.code == 200) {
-          //onboard message
-          context.send(
-            `Welcome! I'm Earl, and I'm here to assist you with everything frENSday!
-
-Join us in our event group chat: https://converse.xyz/group/${groupId}
-
-If you need any information about the event or our speakers, just ask me. I'm always happy to help!`
-          );
-          await context.intent("/subscribe");
-          console.log(`User added: ${sender.address}`);
-
-          setTimeout(() => {
-            context.send(
-              "psst... by the way, check with Bittu https://converse.xyz/dm/bittu.frens.eth for a exclusive POAP 😉"
-            );
-          }, 30000); // 30000 milliseconds = 30 seconds
-
-          const sendBittu = await context.intent(
-            `/sendbittu ${sender.address}`
-          );
-          console.log("Send Bittu", sendBittu);
-          if (sendBittu?.code == 200) return true;
-          else return false;
-        }
-      }
-    } catch (error) {
-      console.log("Error adding to group", error);
-    }
+  } catch (error) {
+    console.log("Error adding to group", error);
     return false;
   }
 }
