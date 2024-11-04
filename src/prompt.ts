@@ -28,16 +28,13 @@ Each character has its own task. This are the characters:
 - For all about ENS domains go to Kuzco https://converse.xyz/dm/kuzco.frens.eth
 - And for all about Bangkok side events go to Lili https://converse.xyz/dm/lili.frens.eth
 `;
-  /* Add user context like its name or address */
-  systemPrompt += PROMPT_USER_CONTENT(userInfo);
 
   /* Each agent has a personality */
   systemPrompt += getPersonality(name);
-
   /* Each agent has a task, which is defined the promps for each one*/
   systemPrompt += getTasks(name);
-  console.log(name, getTasks(name));
-
+  /* Add user context like its name or address */
+  systemPrompt += PROMPT_USER_CONTENT(userInfo);
   /*Each agent has specific information*/
   systemPrompt += specificInfo(name);
 
@@ -46,7 +43,7 @@ Each character has its own task. This are the characters:
 
   //Return with dev addresses for testing
   if (!isDeployed) systemPrompt = replaceDeeplinks(systemPrompt);
-
+  console.log(systemPrompt);
   return systemPrompt;
 };
 

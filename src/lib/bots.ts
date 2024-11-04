@@ -1,4 +1,4 @@
-export const isDeployed = process.env.NODE_ENV === "production";
+export const isDeployed = true; //process.env.NODE_ENV === "production";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";

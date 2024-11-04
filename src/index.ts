@@ -1,5 +1,6 @@
 import { mainHandler } from "./handlers/main.js";
 import { botAddresses } from "./lib/bots.js";
+import { isDeployed } from "./lib/bots.js";
 import fs from "fs";
 
 // ASCII art logo for FRENSDAY
@@ -15,7 +16,6 @@ const frensdayLogo = `\x1b[38;2;56;136;255m
 \x1b[38;2;250;105;119m\Powered by MessageKit \x1b[0m`;
 
 console.log(frensdayLogo);
-const isDeployed = process.env.NODE_ENV === "production";
 
 console.log("\n\nStatus:\n   - Characters initialized");
 setupFiles();
