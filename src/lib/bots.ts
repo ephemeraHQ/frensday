@@ -1,4 +1,9 @@
-const isDeployed = process.env.NODE_ENV === "production";
+export const isDeployed = process.env.NODE_ENV === "production";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function getBotName(address: string) {
   return botAddresses.find(
@@ -6,7 +11,20 @@ export async function getBotName(address: string) {
       (isDeployed ? bot.address : bot.devAddress) === address.toLowerCase()
   )?.name;
 }
+export function getTimeZone() {
+  const bangkokTimezone = "Asia/Bangkok";
+  const currentTime = new Date().toLocaleString("en-US", {
+    timeZone: bangkokTimezone,
+  });
 
+  const time = `Current time in Bangkok: ${currentTime} - ${new Date().toLocaleDateString(
+    "en-US",
+    {
+      weekday: "long",
+    }
+  )}`;
+  return time;
+}
 export const getBotAddress = (name: string) => {
   if (botAddresses) {
     return botAddresses.find(
@@ -88,25 +106,51 @@ export function isBot(address: string) {
 }
 
 export function replaceDeeplinks(generalPrompt: string) {
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "kuzco.frens.eth",
     getBotAddress("kuzco") || ""
   );
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "lili.frens.eth",
     getBotAddress("lili") || ""
   );
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "peanut.frens.eth",
     getBotAddress("peanut") || ""
   );
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "bittu.frens.eth",
     getBotAddress("bittu") || ""
   );
-  generalPrompt = generalPrompt.replace(
+  generalPrompt = generalPrompt.replaceAll(
     "earl.frens.eth",
     getBotAddress("earl") || ""
   );
   return generalPrompt;
 }
+
+export const specificInfo = (name: string) => {
+  let specificInfo = "";
+  if (name === "earl") {
+    const speakers = fs.readFileSync(
+      path.resolve(__dirname, "../../src/data/speakers.md"),
+      "utf8"
+    );
+    specificInfo += "\n\n### Speakers\n\n" + speakers;
+  } else if (name === "lili") {
+    const thailand = fs.readFileSync(
+      path.resolve(__dirname, "../../src/data/thailand.csv"),
+      "utf8"
+    );
+    specificInfo += "\n\n### Thailand\n\n" + thailand;
+  }
+  return specificInfo;
+};
+
+export const getPersonality = (name: string) => {
+  const personality = fs.readFileSync(
+    path.resolve(__dirname, `../../src/personalities/${name}.md`),
+    "utf8"
+  );
+  return `\n\n# Personality: You are ${name}\n\n` + personality;
+};

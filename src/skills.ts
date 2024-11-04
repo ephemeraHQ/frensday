@@ -13,13 +13,21 @@ export const skills: SkillGroup[] = [
         command: "/subscribe",
         triggers: ["/subscribe"],
         handler: handleMembers,
-        examples: ["/subscribe "],
+        examples: ["/subscribe"],
         description: "Subscribe to updates.",
         params: {
           address: {
             type: "address",
           },
         },
+      },
+      {
+        command: "/reset",
+        triggers: ["/reset"],
+        examples: ["/reset"],
+        handler: handleMembers,
+        description: "Reset the conversation.",
+        params: {},
       },
       {
         command: "/unsubscribe",
@@ -148,14 +156,6 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/reset",
-        triggers: ["/reset"],
-        examples: ["/reset"],
-        handler: handleEns,
-        description: "Reset the conversation.",
-        params: {},
-      },
-      {
         command: "/tip [address]",
         description: "Show a URL for tipping a domain owner.",
         triggers: ["/tip"],
@@ -176,7 +176,8 @@ export const skills: SkillGroup[] = [
     skills: [
       {
         command: "/poap [address]",
-        triggers: ["/poap", "/sendbittu", "/removepoap"],
+        triggers: ["/poap"],
+        examples: ["/poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
         handler: handlePoap,
         description: "Get your POAP.",
         params: {
@@ -187,7 +188,8 @@ export const skills: SkillGroup[] = [
       },
       {
         command: "/sendbittu [address]",
-        triggers: ["/poap", "/sendbittu", "/removepoap"],
+        triggers: ["/sendbittu"],
+        examples: ["/sendbittu 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
         handler: handlePoap,
         description: "Send Bittu to send a DM.",
         params: {
@@ -198,7 +200,8 @@ export const skills: SkillGroup[] = [
       },
       {
         command: "/removepoap [address]",
-        triggers: ["/poap", "/sendbittu", "/removepoap"],
+        triggers: ["/removepoap"],
+        examples: ["/removepoap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
         handler: handlePoap,
         description: "Remove your POAP.",
         params: {

@@ -1,6 +1,6 @@
 import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
-import { clearChatHistory } from "./agent.js";
+import { clearChatHistory } from "./members.js";
 
 await db.read();
 
