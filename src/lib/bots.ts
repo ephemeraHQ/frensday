@@ -29,7 +29,7 @@ export const getBotAddress = (name: string) => {
   if (botAddresses) {
     return botAddresses.find(
       (bot) => bot.name.toLowerCase() === name.toLowerCase()
-    )?.[isDeployed ? "address" : "devAddress"];
+    )?.[isDeployed ? "domain" : "devAddress"];
   }
   return "";
 };
