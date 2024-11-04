@@ -1,6 +1,6 @@
 import { HandlerContext } from "@xmtp/message-kit";
 import { textGeneration, processMultilineResponse } from "../lib/gpt.js";
-import { BITTU, EARL, PEANUT, LILI, GENERAL, KUZCO } from "../prompts/tasks.js";
+import { BITTU, EARL, PEANUT, LILI, GENERAL, KUZCO } from "../tasks.js";
 import fs from "fs";
 import path from "path";
 import { replaceDeeplinks } from "../lib/bots.js";

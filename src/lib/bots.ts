@@ -24,7 +24,7 @@ export type BotAddress = {
   terminalColor: string;
   domain: string;
   privateKey: string;
-  hideInitLogMessage: true;
+  hideInitLogMessage: boolean;
 };
 export const botAddresses: BotAddress[] = [
   {

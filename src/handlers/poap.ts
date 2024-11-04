@@ -39,7 +39,9 @@ export async function handlePoap(context: HandlerContext) {
         await db.write();
         clearChatHistory(sender.address);
         await context.send(`Here is your POAP`);
-        await context.send(`${url}${newPoap?.id}?address=${address}`);
+        let poapURL = `${url}${newPoap?.id}`;
+        if (address) poapURL += `?address=${address}`;
+        await context.send(poapURL);
       } else {
         clearChatHistory(sender.address);
         await context.send(`No more POAPs available`);
@@ -48,7 +50,9 @@ export async function handlePoap(context: HandlerContext) {
       clearChatHistory(sender.address);
 
       await context.send(`Here is the POAP you already claimed`);
-      await context.send(`${url}${poap?.id}?address=${address}`);
+      let poapURL = `${url}${poap?.id}`;
+      if (address) poapURL += `?address=${address}`;
+      await context.send(poapURL);
     }
   } else if (command == "sendbittu") {
     const conversations = await bittu.conversations.list();

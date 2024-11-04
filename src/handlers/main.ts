@@ -27,17 +27,18 @@ export async function mainHandler(appConfig: BotAddress) {
         members,
         skills,
       } = context;
-      console.log("skills", skills);
       if (isBot(sender.address)) return;
       if (typeId === "group_updated" && name == "bittu") {
         const { addedInboxes } = context.message.content;
         if (addedInboxes.length === 1) {
           const addedMember = await members?.find(
-            (member: any) => member.inboxId === addedInboxes[0]?.inboxId
+            (member: any) => member.inboxId === addedInboxes[0]?.inboxId,
           );
           if (addedMember) {
             group.send(
-              "Welcome to the group!" + addedMember?.address.slice(0, 4) + "..."
+              "Welcome to the group!" +
+                addedMember?.address.slice(0, 4) +
+                "...",
             );
           }
         }
@@ -68,6 +69,6 @@ export async function mainHandler(appConfig: BotAddress) {
       }
       await agentHandler(context, name);
     },
-    { ...appConfig }
+    { ...appConfig },
   );
 }

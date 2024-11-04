@@ -3,7 +3,7 @@ import { handleEns } from "./handlers/ens.js";
 import { handlePoap } from "./handlers/poap.js";
 import { handleMembers } from "./handlers/members.js";
 
-export const commands: SkillGroup[] = [
+export const skills: SkillGroup[] = [
   {
     name: "Earl",
     tag: "@earl",
