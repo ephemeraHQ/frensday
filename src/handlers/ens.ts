@@ -1,51 +1,41 @@
-import { HandlerContext } from "@xmtp/message-kit";
+import { HandlerContext, SkillResponse } from "@xmtp/message-kit";
+import { getUserInfo, clearInfoCache, isOnXMTP } from "../lib/resolver.js";
+import { isAddress } from "viem";
+import { clearMemory } from "../lib/gpt.js";
 
-import { textGeneration } from "../lib/openai.js";
-import { responseParser } from "../lib/openai.js";
-let chatHistories: Record<string, any[]> = {};
+export const frameUrl = "https://ens.steer.fun/";
+export const ensUrl = "https://app.ens.domains/";
+export const baseTxUrl = "https://base-tx-frame.vercel.app";
 
-interface EnsData {
-  address?: string;
-  avatar?: string;
-  avatar_small?: string;
-  avatar_url?: string;
-  contentHash?: string;
-  description?: string;
-  ens?: string;
-  ens_primary?: string;
-  github?: string;
-  resolverAddress?: string;
-  twitter?: string;
-  url?: string;
-  wallets?: {
-    eth?: string;
-  };
-}
-
-export async function handleEns(context: HandlerContext) {
+export async function handleEns(
+  context: HandlerContext
+): Promise<SkillResponse> {
   const {
     message: {
       content: { command, params, sender },
     },
   } = context;
-  const frameUrl = "https://ens.steer.fun/";
-  const baseUrl = "https://app.ens.domains/";
-  if (command == "renew") {
+  if (command == "reset") {
+    clearMemory();
+    return { code: 200, message: "Conversation reset." };
+  } else if (command == "renew") {
     // Destructure and validate parameters for the ens command
     const { domain } = params;
     // Check if the user holds the domain
     if (!domain) {
-      context.reply("Missing required parameters. Please provide domain.");
-      return;
+      return {
+        code: 400,
+        message: "Missing required parameters. Please provide domain.",
+      };
     }
 
-    const response = await fetch(`https://ensdata.net/${domain}`);
-    const data: EnsData = (await response.json()) as EnsData;
+    const data = await getUserInfo(domain);
 
-    if (data?.address !== sender?.address) {
+    if (!data?.address || data?.address !== sender?.address) {
       return {
         code: 403,
-        message: "You do not hold this domain. Only the owner can renew it.",
+        message:
+          "Looks like this domain is not registered to you. Only the owner can renew it.",
       };
     }
 
@@ -63,29 +53,29 @@ export async function handleEns(context: HandlerContext) {
       };
     }
     // Generate URL for the ens
-    let url_ens = baseUrl + domain + "/register";
+    let url_ens = ensUrl + domain;
     return { code: 200, message: `${url_ens}` };
-  } else if (command == "help") {
-    return {
-      code: 200,
-      message:
-        "Here is the list of commands:\n/register [domain]: Register a domain.\n/renew [domain]: Renew a domain.\n/info [domain]: Get information about a domain.\n/check [domain]: Check if a domain is available.\n/help: Show the list of commands",
-    };
   } else if (command == "info") {
     const { domain } = params;
-    const response = await fetch(`https://ensdata.net/${domain}`);
-    const data: EnsData = (await response.json()) as EnsData;
+
+    const data = await getUserInfo(domain);
+    if (!data?.ensDomain) {
+      return {
+        code: 404,
+        message: "Domain not found.",
+      };
+    }
 
     const formattedData = {
       Address: data?.address,
-      "Avatar URL": data?.avatar_url,
-      Description: data?.description,
-      ENS: data?.ens,
-      "Primary ENS": data?.ens_primary,
-      GitHub: data?.github,
-      "Resolver address": data?.resolverAddress,
-      Twitter: data?.twitter,
-      URL: `${baseUrl}${domain}`,
+      "Avatar URL": data?.ensInfo?.avatar,
+      Description: data?.ensInfo?.description,
+      ENS: data?.ensDomain,
+      "Primary ENS": data?.ensInfo?.ens_primary,
+      GitHub: data?.ensInfo?.github,
+      Resolver: data?.ensInfo?.resolverAddress,
+      Twitter: data?.ensInfo?.twitter,
+      URL: `${ensUrl}${domain}`,
     };
 
     let message = "Domain information:\n\n";
@@ -94,7 +84,19 @@ export async function handleEns(context: HandlerContext) {
         message += `${key}: ${value}\n`;
       }
     }
-
+    message += `\n\nWould you like to tip the domain owner for getting there first 🤣?`;
+    message = message.trim();
+    if (
+      await isOnXMTP(
+        context.v2client,
+        data?.ensInfo?.ens,
+        data?.ensInfo?.address
+      )
+    ) {
+      await context.send(
+        `Ah, this domains is in XMTP, you can message it directly: https://converse.xyz/dm/${domain}`
+      );
+    }
     return { code: 200, message };
   } else if (command == "check") {
     const { domain } = params;
@@ -105,115 +107,75 @@ export async function handleEns(context: HandlerContext) {
         message: "Please provide a domain name to check.",
       };
     }
-    const response = await fetch(`https://ensdata.net/${domain}`);
-    const data: EnsData = (await response.json()) as EnsData;
 
+    const data = await getUserInfo(domain);
     if (!data?.address) {
+      let message = `Looks like ${domain} is available! Here you can register it: ${ensUrl}${domain} or would you like to see some cool alternatives?`;
       return {
         code: 200,
-        message: `Looks like ${domain} is available! Do you want to register it? ${baseUrl}${domain}`,
+        message,
       };
     } else {
+      let message = `Looks like ${domain} is already registered!`;
+      await context.skill("/cool " + domain);
       return {
         code: 404,
-        message: `Looks like ${domain} is already registered! I can provide more info about this domain or else we can try cool alternatives.`,
+        message,
       };
     }
-  }
-}
-
-export async function ensAgent(context: HandlerContext) {
-  if (!process?.env?.OPEN_AI_API_KEY) {
-    console.log("No OPEN_AI_API_KEY found in .env");
-    return;
-  }
-
-  const {
-    message: {
-      content: { content, params },
-      sender,
-    },
-    group,
-  } = context;
-
-  try {
-    let userPrompt = params?.prompt ?? content;
-
-    const { reply, history } = await textGeneration(
-      userPrompt,
-      ens_agent_prompt(sender.address),
-      chatHistories[sender.address]
-    );
-    if (!group) chatHistories[sender.address] = history; // Update chat history for the user
-
-    await processResponseWithIntent(reply, context, sender.address);
-  } catch (error) {
-    console.error("Error during OpenAI call:", error);
-    await context.send("An error occurred while processing your request.");
-  }
-}
-
-async function processResponseWithIntent(
-  reply: string,
-  context: any,
-  senderAddress: string
-) {
-  let messages = reply
-    .split("\n")
-    .map((message: string) => responseParser(message))
-    .filter((message): message is string => message.length > 0);
-
-  for (const message of messages) {
-    if (message.startsWith("/")) {
-      const response = await context.intent(message);
-      if (response && response.message) {
-        let msg = responseParser(response.message);
-
-        chatHistories[senderAddress]?.push({
-          role: "system",
-          content: msg,
-        });
-
-        await context.send(response.message);
-      }
-    } else {
-      await context.send(message);
+  } else if (command == "tip") {
+    const { address } = params;
+    if (!address) {
+      return {
+        code: 400,
+        message: "Please provide an address to tip.",
+      };
     }
+    const data = await getUserInfo(address);
+    let txUrl = `${baseTxUrl}/transaction/?transaction_type=send&buttonName=Tip%20${
+      data?.ensDomain ?? ""
+    }&amount=1&token=USDC&receiver=${
+      isAddress(address) ? address : data?.address
+    }`;
+    console.log(txUrl);
+    return {
+      code: 200,
+      message: txUrl,
+    };
+  } else if (command == "cool") {
+    const { domain } = params;
+    //What about these cool alternatives?\
+    return {
+      code: 200,
+      message: `${generateCoolAlternatives(domain)}`,
+    };
+  } else {
+    return { code: 400, message: "Command not found." };
   }
 }
 
-export function ens_agent_prompt(address: string) {
-  const systemPrompt = `You are a helpful and playful ens domain agent that lives inside a web3 messaging app.
-- You can respond with multiple messages if needed. Each message should be separated by a newline character.
-- You can trigger commands by only sending the command in a newline message.
-- Only provide answers based on verified information.
-- Do not make guesses or assumptions
-- Users address is: ${address}
-- Users can start a conversation by tagging you in a prompt like "@ensbot example.eth" or chatting 1:1
+export const generateCoolAlternatives = (domain: string) => {
+  const suffixes = ["lfg", "cool", "degen", "moon", "base", "gm"];
+  const alternatives = [];
+  for (let i = 0; i < 5; i++) {
+    const randomPosition = Math.random() < 0.5;
+    const baseDomain = domain.replace(/\.eth$/, ""); // Remove any existing .eth suffix
+    alternatives.push(
+      randomPosition
+        ? `${suffixes[i]}${baseDomain}.eth`
+        : `${baseDomain}${suffixes[i]}.eth`
+    );
+  }
 
-## Task
-- Start by telling the user whats possible. Don't mention explicit commands in your response. Just the possibilities.
-- If a domain is registered, suggest 5 potential alternatives.
-- To trigger renewal: "/renew [domain]".
-- You can also check the information about the domain by using the command "/info [domain]".
-- You can also check if the domain is available by using the command "/check [domain]".
-- to register a domain use the command "/register [domain]".
-- to get help use the command "/help".
+  const cool_alternativesFormat = alternatives
+    .map(
+      (alternative: string, index: number) => `${index + 1}. ${alternative} ✨`
+    )
+    .join("\n");
+  return cool_alternativesFormat;
+};
 
-Commands:
-- /check [domain]: Check if a domain is available
-- /register [domain]: Register a domain
-- /renew [domain]: Renew a domain
-- /info [domain]: Get information about a domain
-
-Examples:
-- /register vitalik.eth 
-- /check vitalik.eth
-- /renew vitalik.eth
-- /info vitalik.eth`;
-  return systemPrompt;
-}
-
-export async function clearChatHistory() {
-  chatHistories = {};
+export async function clear() {
+  clearMemory();
+  clearInfoCache();
 }

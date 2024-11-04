@@ -3,7 +3,7 @@ import { Client } from "@xmtp/xmtp-js";
 import { db } from "./db.js";
 import { fetchSpeakers } from "./eventapi.js";
 import fs from "fs/promises";
-import { textGeneration } from "./openai.js";
+import { textGeneration } from "./gpt.js";
 import path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
@@ -56,7 +56,7 @@ export async function startCron(v2client: Client) {
             (conv) => conv.peerAddress === subscriber.address
           );
           if (targetConversation) {
-            const announcement = await generateAnnouncement();
+            const announcement = await generateAnnouncement(subscriber.address);
             await targetConversation.send(announcement);
             await targetConversation.send(
               "If you need any information about the event or our speakers, just ask me. I'm always happy to help!"
@@ -75,7 +75,7 @@ export async function startCron(v2client: Client) {
   );
 }
 
-export async function generateAnnouncement() {
+export async function generateAnnouncement(senderAddress: string) {
   const speakers = await fs.readFile(SPEAKERS_FILE_PATH, "utf-8");
   const systemPrompt = `
   You are Earl, a helpful assistant that generates announcements for the event.
@@ -90,7 +90,11 @@ export async function generateAnnouncement() {
   const userPrompt = `Based on the following list of speakers, generate an announcement for the event:
   ${speakers}
   `;
-  const { reply } = await textGeneration(userPrompt, systemPrompt);
+  const { reply } = await textGeneration(
+    senderAddress,
+    userPrompt,
+    systemPrompt
+  );
 
   return reply;
 }

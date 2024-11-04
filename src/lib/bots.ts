@@ -7,20 +7,6 @@ export async function getBotName(address: string) {
   )?.name;
 }
 
-export async function isReplyFromBot(
-  chain: any,
-  userPrompt: string,
-  name: string
-) {
-  if (userPrompt.includes("@" + name)) return true;
-  const botAddress = getBotAddress(name);
-  if (!botAddress) return false;
-
-  return chain.some(
-    (c: any) => c.address.toLowerCase() == botAddress.toLowerCase()
-  );
-}
-
 export const getBotAddress = (name: string) => {
   if (botAddresses) {
     return botAddresses.find(
@@ -38,6 +24,7 @@ export type BotAddress = {
   terminalColor: string;
   domain: string;
   privateKey: string;
+  hideInitLogMessage: true;
 };
 export const botAddresses: BotAddress[] = [
   {
@@ -48,6 +35,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;26;170;255m",
     domain: "earl.frens.eth",
     privateKey: process.env.KEY_EARL as string,
+    hideInitLogMessage: true,
   },
   {
     name: "lili",
@@ -57,6 +45,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;1;152;80m",
     domain: "lili.frens.eth",
     privateKey: process.env.KEY_LILI as string,
+    hideInitLogMessage: true,
   },
   {
     name: "bittu",
@@ -66,6 +55,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;247;160;239m",
     domain: "bittu.frens.eth",
     privateKey: process.env.KEY_BITTU as string,
+    hideInitLogMessage: true,
   },
   {
     name: "kuzco",
@@ -75,6 +65,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;246;106;31m",
     domain: "kuzco.frens.eth",
     privateKey: process.env.KEY_KUZCO as string,
+    hideInitLogMessage: true,
   },
   {
     name: "peanut",
@@ -84,6 +75,7 @@ export const botAddresses: BotAddress[] = [
     terminalColor: "\x1b[38;2;245;79;0m",
     domain: "peanut.frens.eth",
     privateKey: process.env.KEY_PEANUT as string,
+    hideInitLogMessage: true,
   },
 ];
 

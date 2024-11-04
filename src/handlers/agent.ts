@@ -1,6 +1,5 @@
-import { HandlerContext, User } from "@xmtp/message-kit";
-import { responseParser } from "../lib/openai.js";
-import { textGeneration } from "../lib/openai.js";
+import { HandlerContext } from "@xmtp/message-kit";
+import { textGeneration, processMultilineResponse } from "../lib/gpt.js";
 import { BITTU, EARL, PEANUT, LILI, GENERAL, KUZCO } from "../prompts/tasks.js";
 import fs from "fs";
 import path from "path";
@@ -30,19 +29,19 @@ export async function agentHandler(context: HandlerContext, name: string) {
 
     //Onboarding
     if (name === "earl" && !group) {
-      const onboarded = await onboard(context, name, sender);
+      const onboarded = await onboard(context, name, sender.address);
       if (onboarded) return;
     }
 
     const { reply, history } = await textGeneration(
+      sender?.address,
       userPrompt,
-      await getSystemPrompt(name, sender),
-      chatHistories[historyKey]
+      await getSystemPrompt(name, sender)
     );
 
     if (!group) chatHistories[historyKey] = history; // Update chat history for the user
 
-    await processResponseWithIntent(reply, context, sender.address);
+    await processMultilineResponse(sender.address, reply, context);
   } catch (error) {
     console.error("Error during OpenAI call:", error);
     await context.send(
@@ -51,46 +50,17 @@ export async function agentHandler(context: HandlerContext, name: string) {
   }
 }
 
-async function processResponseWithIntent(
-  reply: string,
-  context: any,
-  senderAddress: string
-) {
-  let messages = reply
-    .split("\n")
-    .map((message: string) => responseParser(message))
-    .filter((message): message is string => message.length > 0);
-
-  for (const message of messages) {
-    if (message.startsWith("/")) {
-      const response = await context.intent(message);
-      if (response && response.message) {
-        let msg = responseParser(response.message);
-
-        chatHistories[senderAddress]?.push({
-          role: "system",
-          content: msg,
-        });
-
-        await context.send(response.message);
-      }
-    } else {
-      await context.send(message);
-    }
-  }
-}
-
-async function getSystemPrompt(name: string, sender: User) {
+async function getSystemPrompt(name: string, senderAddress: string) {
   //General prompt
 
   //Personality prompt
   const personality = fs.readFileSync(
-    path.resolve(__dirname, `../../src/prompts/personalities/${name}.md`),
+    path.resolve(__dirname, `../../src/personalities/${name}.md`),
     "utf8"
   );
 
   let task = getTasks(name);
-  let generalPrompt = replaceValues(GENERAL, name, sender.address);
+  let generalPrompt = replaceValues(GENERAL, name, senderAddress);
 
   if (name === "earl") {
     const speakers = fs.readFileSync(
@@ -152,27 +122,28 @@ export async function clearChatHistory(address?: string) {
   else chatHistories = {};
 }
 
-async function onboard(context: HandlerContext, name: string, sender: User) {
+async function onboard(
+  context: HandlerContext,
+  name: string,
+  senderAddress: string
+) {
+  const { skill } = context;
   if (name === "earl") {
     try {
-      const exists = await context.intent(`/exists ${sender.address}`);
+      const exists = await skill(`/exists`);
       if (exists?.code == 400) {
-        clearChatHistory(sender.address);
-        const response2 = await context.intent("/add");
+        clearChatHistory(senderAddress);
+        const response2 = await skill("/add");
         console.log("Adding to group", response2);
         // Sleep for 30 seconds
         const groupId = process.env.GROUP_ID;
         if (response2?.code == 200) {
           //onboard message
           context.send(
-            `Welcome! I'm Earl, and I'm here to assist you with everything frENSday!
-
-Join us in our event group chat: https://converse.xyz/group/${groupId}
-
-If you need any information about the event or our speakers, just ask me. I'm always happy to help!`
+            `Welcome! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`
           );
-          await context.intent("/subscribe");
-          console.log(`User added: ${sender.address}`);
+          await context.skill(`/subscribe ${senderAddress}`);
+          console.log(`User added: ${senderAddress}`);
 
           setTimeout(() => {
             context.send(
@@ -180,9 +151,7 @@ If you need any information about the event or our speakers, just ask me. I'm al
             );
           }, 30000); // 30000 milliseconds = 30 seconds
 
-          const sendBittu = await context.intent(
-            `/sendbittu ${sender.address}`
-          );
+          const sendBittu = await context.skill(`/sendbittu ${senderAddress}`);
           console.log("Send Bittu", sendBittu);
           if (sendBittu?.code == 200) return true;
           else return false;

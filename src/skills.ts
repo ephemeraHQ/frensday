@@ -1,19 +1,19 @@
-import type { CommandGroup } from "@xmtp/message-kit";
+import type { SkillGroup } from "@xmtp/message-kit";
 import { handleEns } from "./handlers/ens.js";
 import { handlePoap } from "./handlers/poap.js";
-import { handleSubscribe } from "./handlers/subscribe.js";
 import { handleMembers } from "./handlers/members.js";
-import { handleStatus } from "./handlers/status.js";
 
-export const commands: CommandGroup[] = [
+export const commands: SkillGroup[] = [
   {
-    name: "Subscribe",
-    description: "Subscribe to updates.",
-    commands: [
+    name: "Earl",
+    tag: "@earl",
+    description: "Earl manages all for the event",
+    skills: [
       {
-        command: "/subscribe [address]",
-        triggers: ["/subscribe", "/unsubscribe", "@earl"],
-        handler: handleSubscribe,
+        command: "/subscribe",
+        triggers: ["/subscribe"],
+        handler: handleMembers,
+        examples: ["/subscribe "],
         description: "Subscribe to updates.",
         params: {
           address: {
@@ -22,9 +22,10 @@ export const commands: CommandGroup[] = [
         },
       },
       {
-        command: "/unsubscribe [address]",
-        triggers: ["/subscribe", "/unsubscribe", "@earl"],
-        handler: handleSubscribe,
+        command: "/unsubscribe",
+        triggers: ["/unsubscribe"],
+        examples: ["/unsubscribe"],
+        handler: handleMembers,
         description: "Unsubscribe to updates.",
         params: {
           address: {
@@ -32,17 +33,12 @@ export const commands: CommandGroup[] = [
           },
         },
       },
-    ],
-  },
-  {
-    name: "Group Bot",
-    description: "Get the group ID.",
-    commands: [
       {
         command: "/add",
         adminOnly: true,
         handler: handleMembers,
-        triggers: ["/id", "/add", "/remove", "/exists", "@earl"],
+        triggers: ["/add"],
+        examples: ["/add"],
         description: "Add yourself to the group.",
         params: {},
       },
@@ -50,7 +46,8 @@ export const commands: CommandGroup[] = [
         command: "/remove",
         adminOnly: true,
         handler: handleMembers,
-        triggers: ["/id", "/add", "/remove", "/exists", "@earl"],
+        triggers: ["/remove"],
+        examples: ["/remove"],
         description: "Remove yourself from the group.",
         params: {},
       },
@@ -58,41 +55,42 @@ export const commands: CommandGroup[] = [
         command: "/id",
         adminOnly: true,
         handler: handleMembers,
-        triggers: ["/id", "/add", "/remove", "/exists", "@earl"],
+        triggers: ["/id"],
         description: "Get the group ID.",
         params: {},
       },
       {
-        command: "/exists [address]",
+        command: "/exists",
         adminOnly: true,
-        handler: handleSubscribe,
-        triggers: ["/id", "/add", "/remove", "/exists", "@earl"],
+        examples: ["/exists"],
+        handler: handleMembers,
+        triggers: ["/exists"],
         description: "Check if an address is onboarded.",
-        params: {
-          address: {
-            type: "address",
-          },
-        },
+        params: {},
       },
       {
         command: "/status",
         adminOnly: true,
-        triggers: ["/status", "@earl"],
-        handler: handleStatus,
+        triggers: ["/status"],
+        examples: ["/status"],
+        handler: handleMembers,
         description: "Get the status of the bot.",
         params: {},
       },
     ],
   },
   {
-    name: "Ens Domain Bot",
+    name: "Kuzco",
+    tag: "@kuzko",
     description: "Register ENS domains.",
-    commands: [
+    skills: [
       {
         command: "/register [domain]",
-        triggers: ["/register", "@kuzco"],
+        triggers: ["/register"],
         handler: handleEns,
-        description: "Register a domain.",
+        description:
+          "Register a new ENS domain. Returns a URL to complete the registration process.",
+        examples: ["/register vitalik.eth"],
         params: {
           domain: {
             type: "string",
@@ -101,9 +99,11 @@ export const commands: CommandGroup[] = [
       },
       {
         command: "/info [domain]",
-        triggers: ["/info", "@kuzco"],
+        triggers: ["/info"],
         handler: handleEns,
-        description: "Get information about a domain.",
+        description:
+          "Get detailed information about an ENS domain including owner, expiry date, and resolver.",
+        examples: ["/info nick.eth"],
         params: {
           domain: {
             type: "string",
@@ -112,9 +112,11 @@ export const commands: CommandGroup[] = [
       },
       {
         command: "/renew [domain]",
-        triggers: ["/renew", "@kuzco"],
+        triggers: ["/renew"],
         handler: handleEns,
-        description: "Renew a domain.",
+        description:
+          "Extend the registration period of your ENS domain. Returns a URL to complete the renewal.",
+        examples: ["/renew fabri.base.eth"],
         params: {
           domain: {
             type: "string",
@@ -122,16 +124,10 @@ export const commands: CommandGroup[] = [
         },
       },
       {
-        command: "/help",
-        triggers: ["/help", "@kuzco"],
-        handler: undefined,
-        description: "Get help with the bot.",
-        params: {},
-      },
-      {
         command: "/check [domain]",
-        triggers: ["/check", "@kuzco"],
+        triggers: ["/check"],
         handler: handleEns,
+        examples: ["/check vitalik.eth", "/check fabri.base.eth"],
         description: "Check if a domain is available.",
         params: {
           domain: {
@@ -139,12 +135,45 @@ export const commands: CommandGroup[] = [
           },
         },
       },
+      {
+        command: "/cool [domain]",
+        triggers: ["/cool"],
+        examples: ["/cool vitalik.eth"],
+        handler: handleEns,
+        description: "Get cool alternatives for a .eth domain.",
+        params: {
+          domain: {
+            type: "string",
+          },
+        },
+      },
+      {
+        command: "/reset",
+        triggers: ["/reset"],
+        examples: ["/reset"],
+        handler: handleEns,
+        description: "Reset the conversation.",
+        params: {},
+      },
+      {
+        command: "/tip [address]",
+        description: "Show a URL for tipping a domain owner.",
+        triggers: ["/tip"],
+        handler: handleEns,
+        examples: ["/tip 0x1234567890123456789012345678901234567890"],
+        params: {
+          address: {
+            type: "string",
+          },
+        },
+      },
     ],
   },
   {
-    name: "Poap Bot",
-    description: "Get your POAP.",
-    commands: [
+    name: "Bittu",
+    tag: "@bittu",
+    description: "Bittu is the mascot of the event, delivers your poap",
+    skills: [
       {
         command: "/poap [address]",
         triggers: ["/poap", "/sendbittu", "/removepoap"],

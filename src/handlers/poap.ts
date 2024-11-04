@@ -6,7 +6,7 @@ await db.read();
 
 const { v2client: bittu } = await xmtpClient({
   privateKey: process.env.KEY_BITTU,
-  hideLog: true,
+  hideInitLogMessage: true,
 });
 
 export async function handlePoap(context: HandlerContext) {

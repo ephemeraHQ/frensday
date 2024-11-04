@@ -3,17 +3,12 @@ import { agentHandler } from "./agent.js";
 import { run } from "@xmtp/message-kit";
 import { startCron } from "../lib/cron.js";
 import { xmtpClient } from "@xmtp/message-kit";
-import {
-  isBot,
-  isReplyFromBot,
-  getBotAddress,
-  BotAddress,
-} from "../lib/bots.js";
+import { isBot, BotAddress } from "../lib/bots.js";
 import { clearChatHistory } from "./agent.js";
 
 const { v2client: earl } = await xmtpClient({
   privateKey: process.env.KEY_EARL,
-  hideLog: true,
+  hideInitLogMessage: true,
 });
 startCron(earl);
 
@@ -24,17 +19,15 @@ export async function mainHandler(appConfig: BotAddress) {
     async (context: HandlerContext) => {
       const {
         message: {
-          content: { content: text, params, command },
-          content,
+          content: { content: text },
           typeId,
           sender,
         },
         group,
         members,
-        version,
-        getReplyChain,
+        skills,
       } = context;
-
+      console.log("skills", skills);
       if (isBot(sender.address)) return;
       if (typeId === "group_updated" && name == "bittu") {
         const { addedInboxes } = context.message.content;
@@ -50,50 +43,31 @@ export async function mainHandler(appConfig: BotAddress) {
         }
 
         return;
-      } else if (typeId !== "text" && typeId !== "reply") return;
+      }
+      //Disable for groups
+      if (group) {
+        context.reply("Sorry i dont work inside groups 🙈");
+        return;
+      }
+      if (typeId !== "text") return;
       const lowerContent = text?.toLowerCase();
 
       if (lowerContent.startsWith("/reset")) {
         clearChatHistory();
         context.send("Resetting chat history");
         //remove from group
-        const response = await context.intent("/remove");
+        const response = await context.skill("/remove");
         if (response && response.message) context.send(response.message);
-        const response2 = await context.intent("/unsubscribe");
+        const response2 = await context.skill("/unsubscribe");
         if (response2 && response2.message) context.send(response2.message);
 
-        const response3 = await context.intent(`/removepoap ${sender.address}`);
+        const response3 = await context.skill(`/removepoap ${sender.address}`);
         if (response3 && response3.message) context.send(response3.message);
 
         return;
-      } else if (lowerContent.startsWith("/")) {
-        context.intent(text);
-        return;
-      } else if (
-        !group ||
-        (group && typeId === "text" && text.includes("@" + name))
-      ) {
-        await agentHandler(context, name);
-        return;
-      } else if (typeId === "reply") {
-        const { content: reply, reference } = content;
-        const botAddress = getBotAddress(name);
-        const { chain } = await getReplyChain(
-          reference,
-          version,
-          botAddress || ""
-        );
-
-        let userPrompt = `The following is a conversation history. \nMessage History:\n${chain
-          .map((c) => c.content)
-          .join("\n")}\nLatest reply: ${reply}`;
-
-        if (await isReplyFromBot(chain, userPrompt, name)) {
-          await agentHandler(context, name);
-        }
-        return;
-      } else if (group) return;
+      }
+      await agentHandler(context, name);
     },
-    { ...appConfig, hideLog: true }
+    { ...appConfig }
   );
 }

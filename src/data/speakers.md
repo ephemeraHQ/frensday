@@ -1,4 +1,4 @@
-Nick Johnson - Lead Developer — ENS Labs
+Nick Johnson - Founder of ENS & Lead Developer — ENS Labs
 
 Vitalik Buterin - Researcher — Ethereum Foundation
 
@@ -27,3 +27,21 @@ Tascha - Founder & CEO — INFINIT
 Matthew Tan - CEO — Etherscan
 
 nickmolnar.eth - CTO — Ephemera
+
+Jesse Pollak - Creator — Base
+
+Gabby Dizon - Co-Founder — Yield Guild Games (YGG)
+
+Annabelle - Venture Partner — Amber Group
+
+Jeff Lau - Co-founder of ENS & Protocol Developer — ENS Labs
+
+Khori Whittaker - Executive Director — ENS Labs
+
+Katherine Wu - COO — ENS Labs
+
+esk3nder.eth - Head of Product & Strategy — ENS Labs
+
+gregskril.eth - Developer Relations — ENS Labs
+
+Dom Perri - Product Designer — ENS Labs
