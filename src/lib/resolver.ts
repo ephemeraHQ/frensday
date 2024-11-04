@@ -142,10 +142,13 @@ User context:
   if (converseUsername)
     prompt += `\n- Converse username is: ${converseUsername}`;
 
-  prompt = prompt.replace("{ADDRESS}", address || "");
-  prompt = prompt.replace("{ENS_DOMAIN}", ensDomain || "");
-  prompt = prompt.replace("{CONVERSE_USERNAME}", converseUsername || "");
-  prompt = prompt.replace("{PREFERRED_NAME}", preferredName || "");
+  prompt = prompt.replace(
+    "{ADDRESS}",
+    address || "0x3C348aEF831a28f80FF261B028a0A9b2491C0BA6"
+  );
+  prompt = prompt.replace("{ENS_DOMAIN}", ensDomain || "vitalik.eth");
+  prompt = prompt.replace("{CONVERSE_USERNAME}", converseUsername || "@friend");
+  prompt = prompt.replace("{PREFERRED_NAME}", preferredName || "Friend");
 
   return prompt;
 };
