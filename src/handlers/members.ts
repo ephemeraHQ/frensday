@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
+import fs from "fs";
 import { clearMemory } from "../lib/gpt.js";
 import { clearInfoCache } from "../lib/resolver.js";
 
@@ -8,7 +9,7 @@ const groupId = process.env.GROUP_ID as string;
 export async function handleMembers(context: HandlerContext) {
   const {
     message: {
-      content: { command },
+      content: { command, params },
       sender,
     },
     group,
@@ -57,6 +58,11 @@ export async function handleMembers(context: HandlerContext) {
       return {
         code: 200,
         message: "📣 You have been subscribed to updates.",
+      };
+    } else if (subscriber.status === "subscribed") {
+      return {
+        code: 400,
+        message: "You are already subscribed to updates.",
       };
     }
     return {
@@ -142,6 +148,38 @@ export async function handleMembers(context: HandlerContext) {
     context.send(
       `This is how frENSday is going:\n ${claimed.length} POAPs claimed out of ${poapTable.length}\n ${onboarded.length} users onboarded\n ${subscribed.length} users subscribed`
     );
+  } else if (command == "send") {
+    const { message } = params;
+    let allowedAddresses = [
+      "0xa6D9B3DE32C76950D47F9867E2A7089F78c2Ce8B",
+      "0x277C0dd35520dB4aaDDB45d4690aB79353D3368b",
+      "0x6A03c07F9cB413ce77f398B00C2053BD794Eca1a",
+    ];
+    if (allowedAddresses.includes(sender.address)) {
+      const subscribers = db?.data?.subscribers;
+      const extraSubscribers = fs
+        .readFileSync("src/data/subscribers.txt", "utf8")
+        .split("\n");
+
+      let allSubscribers = [...subscribers, ...extraSubscribers];
+      await context.send(
+        `Sending message to ${
+          subscribers.length + allSubscribers.length
+        } subscribers...`
+      );
+      await context.sendTo(
+        message,
+        subscribers.map((s) => s.address)
+      );
+      return {
+        code: 200,
+        message: "Message sent to subscribers",
+      };
+    }
+    return {
+      code: 400,
+      message: "You are not allowed to send messages",
+    };
   }
 }
 

@@ -10,6 +10,18 @@ export const skills: SkillGroup[] = [
     description: "Earl manages all for the event",
     skills: [
       {
+        command: "/send [message]",
+        triggers: ["/send"],
+        handler: handleMembers,
+        examples: ["/send Hello everyone, the event is starting now!"],
+        description: "Send updates to all subscribers.",
+        params: {
+          message: {
+            type: "prompt",
+          },
+        },
+      },
+      {
         command: "/subscribe",
         triggers: ["/subscribe"],
         handler: handleMembers,
