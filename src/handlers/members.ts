@@ -164,8 +164,6 @@ export async function handleMembers(context: HandlerContext) {
     }
     let allSubscribers = await getSubscribers(context);
     if (allSubscribers.length > 0) {
-      console.log(allSubscribers.length, allSubscribers);
-
       await context.sendTo(
         message,
         allSubscribers.map((s) => s.address)
@@ -215,13 +213,13 @@ export async function getSubscribers(context?: HandlerContext) {
         `Sending message to ${extraSubscribersJson.length} subscribers for testing, in total there are ${allSubscribers.length} subscribers`
       );
       allSubscribers = extraSubscribersJson;
-      console.log(allSubscribers);
     }
     //filter bots
     console.log("Filtering bots", allSubscribers.length);
     allSubscribers = allSubscribers.filter(
       (subscriber) => !isAnyBot(subscriber.address.toLowerCase())
     );
+    console.log(allSubscribers);
     console.log("Filtered bots", allSubscribers.length);
     //filter duplicates
     console.log("Filtering duplicates", allSubscribers.length);

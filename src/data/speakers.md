@@ -45,3 +45,5 @@ esk3nder.eth - Head of Product & Strategy — ENS Labs
 gregskril.eth - Developer Relations — ENS Labs
 
 Dom Perri - Product Designer — ENS Labs
+
+limes.eth - Secretary — ENS DAO, & Steward — ENS DAO Ecosystem Working Group
