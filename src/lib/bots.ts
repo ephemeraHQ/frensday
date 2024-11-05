@@ -5,6 +5,14 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export function isAnyBot(address: string) {
+  return botAddresses.some(
+    (bot) =>
+      bot.address.toLowerCase() === address.toLowerCase() ||
+      bot.devAddress.toLowerCase() === address.toLowerCase()
+  );
+}
+
 export async function getBotName(address: string) {
   return botAddresses.find(
     (bot) =>
