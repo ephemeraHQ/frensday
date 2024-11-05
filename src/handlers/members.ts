@@ -4,7 +4,7 @@ import { db } from "../lib/db.js";
 import fs from "fs";
 import { clearMemory } from "../lib/gpt.js";
 import { clearInfoCache } from "../lib/resolver.js";
-
+import { isBot } from "../lib/bots.js";
 const groupId = process.env.GROUP_ID as string;
 export async function handleMembers(context: HandlerContext) {
   const {
@@ -151,34 +151,37 @@ export async function handleMembers(context: HandlerContext) {
   } else if (command == "send") {
     const { message } = params;
     let allowedAddresses = [
-      "0xa6D9B3DE32C76950D47F9867E2A7089F78c2Ce8B",
-      "0x277C0dd35520dB4aaDDB45d4690aB79353D3368b",
-      "0x6A03c07F9cB413ce77f398B00C2053BD794Eca1a",
+      "0xa6d9b3de32c76950d47f9867e2a7089f78c2ce8b".toLowerCase(),
+      "0x277c0dd35520db4aaddb45d4690ab79353d3368b".toLowerCase(),
+      "0x6a03c07f9cb413ce77f398b00c2053bd794eca1a".toLowerCase(),
     ];
-    if (allowedAddresses.includes(sender.address)) {
-      const subscribers = db?.data?.subscribers;
-      const extraSubscribers = fs
-        .readFileSync("src/data/subscribers.txt", "utf8")
-        .split("\n");
-
-      let allSubscribers = [...subscribers, ...extraSubscribers];
-      await context.send(
-        `Sending message to ${
-          subscribers.length + allSubscribers.length
-        } subscribers...`
-      );
-      await context.sendTo(
-        message,
-        subscribers.map((s) => s.address)
-      );
-      return {
-        code: 200,
-        message: "Message sent to subscribers",
-      };
+    if (allowedAddresses.includes(sender.address.toLowerCase())) {
+      let allSubscribers = await getSubscribers();
+      if (allSubscribers.length > 0) {
+        console.log(allSubscribers.length, allSubscribers);
+        await context.send(
+          `Sending message to ${allSubscribers.length} subscribers...`
+        );
+        await context.sendTo(
+          message,
+          allSubscribers.map((s) => s.address)
+        );
+        return {
+          code: 200,
+          message: "Message sent to subscribers",
+        };
+      } else {
+        return {
+          code: 400,
+          message: "No subscribers found",
+        };
+      }
     }
+    let msg = "You are not allowed to send messages";
+    context.send(msg);
     return {
       code: 400,
-      message: "You are not allowed to send messages",
+      message: msg,
     };
   }
 }
@@ -186,4 +189,42 @@ export async function handleMembers(context: HandlerContext) {
 export async function clearChatHistory(address?: string) {
   clearMemory();
   clearInfoCache();
+}
+
+export async function getSubscribers() {
+  try {
+    let allSubscribers: { address: string; status: string }[] = [];
+    await db.read();
+    const subscribers = db?.data?.subscribers;
+    const extraSubscribers = fs
+      .readFileSync("src/data/subscribers.txt", "utf8")
+      .split("\n");
+    const extraSubscribersJson = extraSubscribers.map((address) => ({
+      address: address.toLowerCase(),
+      status: "subscribed",
+    })) as { address: string; status: string }[];
+    allSubscribers = subscribers as any as {
+      address: string;
+      status: string;
+    }[];
+    allSubscribers = allSubscribers.concat(extraSubscribersJson);
+    //filter bots
+    allSubscribers = allSubscribers.filter(
+      (subscriber) =>
+        !isBot(subscriber.address.toLowerCase(), true) &&
+        !isBot(subscriber.address.toLowerCase(), false)
+    );
+    //filter duplicates
+    allSubscribers = allSubscribers.filter(
+      (subscriber, index, self) =>
+        index ===
+        self.findIndex(
+          (t) => t.address.toLowerCase() === subscriber.address.toLowerCase()
+        )
+    );
+    return allSubscribers;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
 }

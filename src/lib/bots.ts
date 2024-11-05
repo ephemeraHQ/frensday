@@ -97,10 +97,10 @@ export const botAddresses: BotAddress[] = [
   },
 ];
 
-export function isBot(address: string) {
+export function isBot(address: string, isDev = false) {
   return botAddresses.some(
     (bot) =>
-      (isDeployed ? bot.address : bot.devAddress).toLowerCase() ===
+      (isDeployed || isDev ? bot.address : bot.devAddress).toLowerCase() ===
       address.toLowerCase()
   );
 }
