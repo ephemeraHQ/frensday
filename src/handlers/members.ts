@@ -5,8 +5,12 @@ import fs from "fs";
 import { clearMemory } from "../lib/gpt.js";
 import { clearInfoCache } from "../lib/resolver.js";
 import { isAnyBot } from "../lib/bots.js";
+import { SkillResponse } from "@xmtp/message-kit";
+
 const groupId = process.env.GROUP_ID as string;
-export async function handleMembers(context: HandlerContext) {
+export async function handleMembers(
+  context: HandlerContext
+): Promise<SkillResponse | undefined> {
   const {
     message: {
       content: { command, params },
@@ -30,7 +34,10 @@ export async function handleMembers(context: HandlerContext) {
     const response3 = await context.skill(`/removepoap ${sender.address}`);
     if (response3 && response3.message) context.send(response3.message);
 
-    return;
+    return {
+      code: 200,
+      message: "Chat history and group removed",
+    };
   } else if (command == "unsubscribe") {
     const subscribers = db?.data?.subscribers;
     const subscriber = subscribers?.find((s) => s.address === sender.address);
@@ -71,36 +78,44 @@ export async function handleMembers(context: HandlerContext) {
     };
   } else if (group && command == "id") {
     console.log(group.id);
-    return;
+    return {
+      code: 200,
+      message: group.id,
+    };
   } else if (command == "add") {
     const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
     );
     if (!subscriberExists) {
+      let address = sender.address.toLowerCase();
+      const canMessage = await client.canMessage([address]);
+      if (!canMessage[address])
+        return {
+          code: 400,
+          message: `
+Ooops, can't add you to the group.
+
+Tips:
+- You must use Converse mobile from the appstore.
+- Iphone: https://apps.apple.com/ar/app/converse-messenger/id1658819514
+- Android: https://play.google.com/store/apps/details?id=com.converse.prod
+
+If none of this works, please contact Fabri on: \n\t\thttps://converse.xyz/dm/fabri.converse.xyz`,
+        };
       const conversation = await client.conversations.getConversationById(
         groupId
       );
-      const canMessage = await client.canMessage([sender.address]);
-      console.log(canMessage);
-      if (conversation && canMessage[sender.address])
-        await conversation.addMembers([sender.address]);
-      else {
+      if (conversation && canMessage[address]) {
+        return {
+          code: 200,
+          message: "You have been added to the group",
+        };
+      } else {
         return {
           code: 400,
-          message: `Ooops, can't add you to the group.
-          
-          Tips:
-          - You must use Converse mobile from the appstore.
-          - ios: https://apps.apple.com/ar/app/converse-messenger/id1658819514
-          - android: https://play.google.com/store/apps/details?id=com.converse.prod
-          - If none of this works, please contact Fabri on: \n\t\thttps://converse.xyz/dm/fabri.converse.xyz`,
+          message: `Ooops, Something went wrong. Please contact Fabri on: \n\t\thttps://converse.xyz/dm/fabri.converse.xyz`,
         };
       }
-
-      return {
-        code: 200,
-        message: "You have been added to the group",
-      };
     }
     return {
       code: 400,
@@ -171,6 +186,11 @@ export async function handleMembers(context: HandlerContext) {
   } else if (command == "send") {
     const { message } = params;
     return await sendBroadcast(message, context, sender.address);
+  } else {
+    return {
+      code: 400,
+      message: "Invalid command",
+    };
   }
 }
 export async function sendBroadcast(
