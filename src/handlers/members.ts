@@ -89,6 +89,7 @@ export async function handleMembers(
     if (!subscriberExists) {
       let address = sender.address.toLowerCase();
       const canMessage = await client.canMessage([address]);
+      console.log(canMessage);
       if (!canMessage[address])
         return {
           code: 400,
@@ -105,7 +106,7 @@ If none of this works, please contact Fabri on: \n\t\thttps://converse.xyz/dm/fa
       const conversation = await client.conversations.getConversationById(
         groupId
       );
-      if (conversation && canMessage[address]) {
+      if (conversation) {
         return {
           code: 200,
           message: "You have been added to the group",
