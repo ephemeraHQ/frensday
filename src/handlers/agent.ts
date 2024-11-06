@@ -65,7 +65,7 @@ async function onboard(
   try {
     const addedToGroup = await context.skill("/add");
     if (addedToGroup?.code == 200) {
-      console.log("Adding to group");
+      console.log("Added to group");
     } else {
       context.send(addedToGroup?.message as string);
       return false;
