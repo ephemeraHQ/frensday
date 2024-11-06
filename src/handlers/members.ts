@@ -74,12 +74,11 @@ export async function handleMembers(context: HandlerContext) {
     return;
   } else if (command == "add") {
     const subscriberExists = db?.data?.subscribers?.find(
-      (s) => s.address === sender.address
+      (s) => s.address === sender.address,
     );
     if (!subscriberExists) {
-      const conversation = await client.conversations.getConversationById(
-        groupId
-      );
+      const conversation =
+        await client.conversations.getConversationById(groupId);
       if (conversation) await conversation.addMembers([sender.address]);
 
       return {
@@ -93,23 +92,22 @@ export async function handleMembers(context: HandlerContext) {
     };
   } else if (command == "remove") {
     const subscriberExists = db?.data?.subscribers?.find(
-      (s) => s.address === sender.address
+      (s) => s.address === sender.address,
     );
     if (subscriberExists) {
-      const conversation = await client.conversations.getConversationById(
-        groupId
-      );
+      const conversation =
+        await client.conversations.getConversationById(groupId);
 
       //Remove from group
       const members = await conversation?.members();
       const member = members?.find((m) =>
-        m.accountAddresses.includes(sender.address)
+        m.accountAddresses.includes(sender.address),
       );
       if (member)
         await conversation?.removeMembers([member.accountAddresses[0]]);
 
       db.data.subscribers = db?.data?.subscribers?.filter(
-        (s) => s.address !== sender.address
+        (s) => s.address !== sender.address,
       );
       await db.write();
 
@@ -149,10 +147,10 @@ export async function handleMembers(context: HandlerContext) {
     const subscribers = db?.data?.subscribers;
     const onboarded = subscribers.filter((subscriber) => subscriber.address);
     const subscribed = onboarded.filter(
-      (subscriber) => subscriber.status === "subscribed"
+      (subscriber) => subscriber.status === "subscribed",
     );
     context.send(
-      `This is how frENSday is going:\n ${claimed.length} POAPs claimed out of ${poapTable.length}\n ${onboarded.length} users onboarded\n ${subscribed.length} users subscribed`
+      `This is how frENSday is going:\n ${claimed.length} POAPs claimed out of ${poapTable.length}\n ${onboarded.length} users onboarded\n ${subscribed.length} users subscribed`,
     );
   } else if (command == "send") {
     const { message } = params;
@@ -162,7 +160,7 @@ export async function handleMembers(context: HandlerContext) {
 export async function sendBroadcast(
   message: string,
   context: HandlerContext,
-  sender: string
+  sender: string,
 ) {
   if (!getAllowedAddresses().includes(sender.toLowerCase())) {
     return {
@@ -174,7 +172,7 @@ export async function sendBroadcast(
   if (allSubscribers.length > 0) {
     await context.sendTo(
       message,
-      allSubscribers.map((s) => s.address)
+      allSubscribers.map((s) => s.address),
     );
     return {
       code: 200,
@@ -213,18 +211,18 @@ export async function getSubscribers(context?: HandlerContext) {
     let allSubscribers = subscribers.concat(extraSubscribersJson);
     if (process.env.ALL_SUBS == "true") {
       await context?.send(
-        `Sending message to ${allSubscribers.length} subscribers...`
+        `Sending message to ${allSubscribers.length} subscribers...`,
       );
     } else {
       await context?.send(
-        `Sending message to ${extraSubscribersJson.length} subscribers for testing, in total there are ${allSubscribers.length} subscribers`
+        `Sending message to ${extraSubscribersJson.length} subscribers for testing, in total there are ${allSubscribers.length} subscribers`,
       );
       allSubscribers = extraSubscribersJson;
     }
     //filter bots
     console.log("Filtering bots", allSubscribers.length);
     allSubscribers = allSubscribers.filter(
-      (subscriber) => !isAnyBot(subscriber.address.toLowerCase())
+      (subscriber) => !isAnyBot(subscriber.address.toLowerCase()),
     );
     console.log(allSubscribers);
     console.log("Filtered bots", allSubscribers.length);
@@ -234,8 +232,8 @@ export async function getSubscribers(context?: HandlerContext) {
       (subscriber, index, self) =>
         index ===
         self.findIndex(
-          (t) => t.address.toLowerCase() === subscriber.address.toLowerCase()
-        )
+          (t) => t.address.toLowerCase() === subscriber.address.toLowerCase(),
+        ),
     );
     console.log("Filtered duplicates", allSubscribers.length);
     return allSubscribers;
