@@ -63,17 +63,23 @@ async function onboard(
   senderAddress: string
 ) {
   try {
-    const response2 = await context.skill("/add");
-    console.log("Adding to group", response2);
+    const addedToGroup = await context.skill("/add");
+    if (addedToGroup?.code == 200) {
+      console.log("Adding to group");
+    } else {
+      context.send(addedToGroup?.message as string);
+      return false;
+    }
     // Sleep for 30 seconds
-    const groupId = process.env.GROUP_ID;
-    if (response2?.code == 200) {
+    if (addedToGroup?.code == 200) {
       //onboard message
+      const groupId = process.env.GROUP_ID;
       context.send(
         `Welcome ${name}! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`
       );
-      await context.skill(`/subscribe ${senderAddress}`);
-      console.log(`User added: ${senderAddress}`);
+      const subscribe = await context.skill(`/subscribe ${senderAddress}`);
+      if (subscribe?.code == 200) console.log(`User subscribed`);
+      else console.log(`User not subscribed`);
 
       setTimeout(() => {
         context.send(

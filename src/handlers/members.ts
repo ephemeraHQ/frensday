@@ -80,7 +80,22 @@ export async function handleMembers(context: HandlerContext) {
       const conversation = await client.conversations.getConversationById(
         groupId
       );
-      if (conversation) await conversation.addMembers([sender.address]);
+      const canMessage = await client.canMessage([sender.address]);
+      console.log(canMessage);
+      if (conversation && canMessage[sender.address])
+        await conversation.addMembers([sender.address]);
+      else {
+        return {
+          code: 400,
+          message: `Ooops, can't add you to the group.
+          
+          Tips:
+          - You must use Converse mobile from the appstore.
+          - ios: https://apps.apple.com/ar/app/converse-messenger/id1658819514
+          - android: https://play.google.com/store/apps/details?id=com.converse.prod
+          - If none of this works, please contact Fabri on: \n\t\thttps://converse.xyz/dm/fabri.converse.xyz`,
+        };
+      }
 
       return {
         code: 200,
