@@ -156,28 +156,35 @@ export async function handleMembers(context: HandlerContext) {
     );
   } else if (command == "send") {
     const { message } = params;
-    if (!getAllowedAddresses().includes(sender.address.toLowerCase())) {
-      return {
-        code: 400,
-        message: "You are not allowed to send messages",
-      };
-    }
-    let allSubscribers = await getSubscribers(context);
-    if (allSubscribers.length > 0) {
-      await context.sendTo(
-        message,
-        allSubscribers.map((s) => s.address)
-      );
-      return {
-        code: 200,
-        message: "Message sent to subscribers",
-      };
-    } else {
-      return {
-        code: 400,
-        message: "No subscribers found",
-      };
-    }
+    return await sendBroadcast(message, context, sender.address);
+  }
+}
+export async function sendBroadcast(
+  message: string,
+  context: HandlerContext,
+  sender: string
+) {
+  if (!getAllowedAddresses().includes(sender.toLowerCase())) {
+    return {
+      code: 400,
+      message: "You are not allowed to send messages",
+    };
+  }
+  let allSubscribers = await getSubscribers(context);
+  if (allSubscribers.length > 0) {
+    await context.sendTo(
+      message,
+      allSubscribers.map((s) => s.address)
+    );
+    return {
+      code: 200,
+      message: "Message sent to subscribers",
+    };
+  } else {
+    return {
+      code: 400,
+      message: "No subscribers found",
+    };
   }
 }
 

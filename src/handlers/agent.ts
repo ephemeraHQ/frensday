@@ -18,6 +18,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
   } = context;
   try {
     const userInfo = await getUserInfo(sender.address);
+
     if (!userInfo) {
       console.log("User info not found");
       return;

@@ -12,7 +12,7 @@ export const skills: SkillGroup[] = [
       {
         command: "/send [message]",
         triggers: ["/send"],
-        handler: handleMembers,
+        handler: undefined,
         examples: ["/send Hello everyone, the event is starting now!"],
         description: "Send updates to all subscribers.",
         params: {
