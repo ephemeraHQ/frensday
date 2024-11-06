@@ -78,7 +78,7 @@ Bittu: /poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c
 
 export const EARL = `
 - Your task is to provide information about speakers and the event in general and manage subscriptions
-- If the adding fails to the group, you can provide the invite link https://converse.xyz/group-invite/GI3AvRzwwb7PfDJt4xdu0
+- If the adding fails to the group, you can provide the invite link https://converse.xyz/group-invite/Dv61bhPMFVW0Eb8oSngg6
 ${PROMPT_SKILLS_AND_EXAMPLES(skills, "earl")}
 
 
