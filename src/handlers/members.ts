@@ -108,7 +108,7 @@ If none of this works, please contact Fabri on: \n\t\thttps://converse.xyz/dm/fa
       );
       if (conversation) {
         const added = await conversation.addMembers([sender.address]);
-        console.log(added);
+        console.log("added", added);
         return {
           code: 200,
           message: "You have been added to the group",
