@@ -213,7 +213,7 @@ export async function getSubscribers(context?: HandlerContext) {
     let allSubscribers = subscribers.concat(extraSubscribersJson);
     if (process.env.ALL_SUBS == "true") {
       await context?.send(
-        `Sending message to ${allSubscribers.length} subscribers...`
+        `Sending message to ALL ${allSubscribers.length} subscribers...`
       );
     } else {
       await context?.send(
@@ -226,7 +226,6 @@ export async function getSubscribers(context?: HandlerContext) {
     allSubscribers = allSubscribers.filter(
       (subscriber) => !isAnyBot(subscriber.address.toLowerCase())
     );
-    console.log(allSubscribers);
     console.log("Filtered bots", allSubscribers.length);
     //filter duplicates
     console.log("Filtering duplicates", allSubscribers.length);

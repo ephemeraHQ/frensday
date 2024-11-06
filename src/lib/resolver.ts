@@ -49,7 +49,7 @@ export const clearInfoCache = () => {
 export const getUserInfo = async (
   key: string,
   clientAddress?: string,
-  context?: HandlerContext
+  context?: HandlerContext,
 ): Promise<UserInfo | null> => {
   let data: UserInfo = infoCache.get(key) || {
     ensDomain: undefined,
@@ -84,7 +84,7 @@ export const getUserInfo = async (
   if (cacheData) return cacheData;
 
   context?.send(
-    "Hey there! Give me a sec while I fetch info about you first..."
+    "Hey there! Give me a sec while I fetch info about you first...",
   );
   if (keyToUse?.includes(".eth")) {
     const response = await fetch(`https://ensdata.net/${keyToUse}`);
@@ -108,7 +108,7 @@ export const getUserInfo = async (
       }),
     });
     const converseData = (await response.json()) as ConverseProfile;
-    if (process.env.MSG_LOG)
+    if (process.env.MSG_LOG === "true")
       //console.log("Converse data", keyToUse, converseData);
       data.converseUsername =
         converseData?.formattedName || converseData?.name || undefined;
@@ -123,7 +123,7 @@ export const getUserInfo = async (
 export const isOnXMTP = async (
   client: Client,
   domain: string | undefined,
-  address: string | undefined
+  address: string | undefined,
 ) => {
   if (domain == "fabri.eth") return false;
   if (address) return (await client.canMessage([address])).length > 0;
@@ -144,7 +144,7 @@ User context:
 
   prompt = prompt.replace(
     "{ADDRESS}",
-    address || "0x3C348aEF831a28f80FF261B028a0A9b2491C0BA6"
+    address || "0x3C348aEF831a28f80FF261B028a0A9b2491C0BA6",
   );
   prompt = prompt.replace("{ENS_DOMAIN}", ensDomain || "vitalik.eth");
   prompt = prompt.replace("{CONVERSE_USERNAME}", converseUsername || "@friend");

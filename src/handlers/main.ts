@@ -1,6 +1,5 @@
-import { HandlerContext } from "@xmtp/message-kit";
+import { HandlerContext, run } from "@xmtp/message-kit";
 import { agentHandler } from "./agent.js";
-import { run } from "@xmtp/message-kit";
 import { startCron } from "../lib/cron.js";
 import { xmtpClient } from "@xmtp/message-kit";
 import { isBot, BotAddress } from "../lib/bots.js";
@@ -13,7 +12,6 @@ const { v2client: earl } = await xmtpClient({
 startCron(earl);
 
 export async function mainHandler(appConfig: BotAddress) {
-  //@ts-ignore
   const { name } = appConfig;
   run(
     async (context: HandlerContext) => {
@@ -48,14 +46,7 @@ export async function mainHandler(appConfig: BotAddress) {
         return;
       }
       if (typeId !== "text") return;
-      if (text.includes("/send")) {
-        await sendBroadcast(
-          text.replace("/send", "").trim(),
-          context,
-          sender.address
-        );
-        return;
-      }
+
       await agentHandler(context, name);
     },
     { ...appConfig }
