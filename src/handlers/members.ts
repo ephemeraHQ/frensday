@@ -143,7 +143,6 @@ export async function handleMembers(context: HandlerContext) {
         message: "You are not allowed to send messages",
       };
     }
-    await db.read();
     const poapTable = db?.data?.poaps;
     const claimed = poapTable.filter((poap) => poap.address);
     const subscribers = db?.data?.subscribers;

@@ -2,8 +2,6 @@ import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 import { clearChatHistory } from "./members.js";
 
-await db.read();
-
 const { v2client: bittu } = await xmtpClient({
   privateKey: process.env.KEY_BITTU,
   hideInitLogMessage: true,
@@ -22,24 +20,30 @@ export async function handlePoap(context: HandlerContext) {
   const url = `https://converse.xyz/poap/`; // we use this to render the frame
   //const url = `https://dev.converse.xyz/poap/`; // we use this to render the frame
   //const url = `http://localhost:3000/poap/`; // we use this to render the frame
+
+  await db.read();
   if (command == "poap") {
-    await db.read();
     // Destructure and validate parameters for the ens command
     const { address } = params;
     const poapTable = db?.data?.poaps;
-    const poap = poapTable.find((poap) => poap.address == address);
+    // Find a POAP with the given address
+    const poap = poapTable.find((poap) => poap.address === address);
+
     // Here we use address
     // Poap studio uses user_address
-    // In converse web we transform address to user_address
+    // In converse web  transform address to user_address
     if (!poap) {
-      const newPoap = poapTable.find((poap) => !poap.address);
-      if (newPoap) {
-        db?.data?.poaps?.push({ id: newPoap?.id, address: address });
+      // Find a new POAP with an empty address
+      const newPoap = poapTable.find((poap) => poap.address === "");
+      console.log("newPoap", newPoap);
 
+      if (newPoap) {
+        // Assign the address to the new POAP
+        newPoap.address = address;
         await db.write();
         clearChatHistory(sender.address);
         await context.send(`Here is your POAP`);
-        let poapURL = `${url}${newPoap?.id}`;
+        let poapURL = `${url}${newPoap.id}`;
         if (address) poapURL += `?address=${address}`;
         await context.send(poapURL);
       } else {
@@ -75,7 +79,6 @@ export async function handlePoap(context: HandlerContext) {
       message: "Bittu sent",
     };
   } else if (command == "removepoap") {
-    await db.read();
     const { address } = params;
     const poapTable = db?.data?.poaps;
     const claimed = poapTable.find(
