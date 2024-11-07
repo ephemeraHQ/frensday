@@ -7,7 +7,9 @@ const { v2client: bittu } = await xmtpClient({
   hideInitLogMessage: true,
 });
 
-export async function handlePoap(context: HandlerContext) {
+export async function handlePoap(
+  context: HandlerContext
+): Promise<{ code: number; message: string } | undefined> {
   const {
     message: {
       content: { content: text, command, params },
@@ -15,48 +17,41 @@ export async function handlePoap(context: HandlerContext) {
     },
   } = context;
 
-  //const url = `https://mint.poap.studio/claim-20/`; will not render the frame
-  //const url = `https://collectors.POAP.xyz/mint-v2/` will not render the frame (default poaps)
   const url = `https://converse.xyz/poap/`; // we use this to render the frame
-  //const url = `https://dev.converse.xyz/poap/`; // we use this to render the frame
-  //const url = `http://localhost:3000/poap/`; // we use this to render the frame
 
-  await db.read();
   if (command == "poap") {
     // Destructure and validate parameters for the ens command
     const { address } = params;
-    const poapTable = db?.data?.poaps;
     // Find a POAP with the given address
-    const poap = poapTable.find((poap) => poap.address === address);
-
-    // Here we use address
-    // Poap studio uses user_address
-    // In converse web  transform address to user_address
+    const poap = await getPoapByAddress(address);
     if (!poap) {
       // Find a new POAP with an empty address
-      const newPoap = poapTable.find((poap) => poap.address === "");
+      const newPoap = await getPoapByAddress("");
       console.log("newPoap", newPoap);
 
-      if (newPoap?.id && newPoap?.address !== address) {
-        // Assign the address to the new POAP
-        clearChatHistory(sender.address);
-        await context.send(`Here is your POAP`);
+      if (newPoap?.id && address) {
         let poapURL = `${url}${newPoap?.id}`;
         if (address) poapURL += `?address=${address}`;
-        await context.send(poapURL);
-        updatePoapDB(newPoap.id, address);
-        //Write db
+        await updatePoapDB(newPoap.id, address);
+        await clearChatHistory(sender.address);
+        return {
+          code: 200,
+          message: `Here is your POAP\n${poapURL}`,
+        };
       } else {
         clearChatHistory(sender.address);
-        await context.send(`No more POAPs available`);
+        return {
+          code: 400,
+          message: "No more POAPs available",
+        };
       }
     } else if (poap) {
-      clearChatHistory(sender.address);
-
-      await context.send(`Here is the POAP you already claimed`);
       let poapURL = `${url}${poap?.id}`;
       if (address) poapURL += `?address=${address}`;
-      await context.send(poapURL);
+      return {
+        code: 200,
+        message: `Here is the POAP you already claimed\n${poapURL}`,
+      };
     }
   } else if (command == "sendbittu") {
     const conversations = await bittu.conversations.list();
@@ -80,9 +75,7 @@ export async function handlePoap(context: HandlerContext) {
     };
   } else if (command == "removepoap") {
     const { address } = params;
-    const poap = db?.data?.poaps?.find(
-      (poap) => poap?.address?.toLowerCase() === address?.toLowerCase()
-    );
+    const poap = await getPoapByAddress(address);
     if (poap) {
       updatePoapDB(poap.id, "");
     } else {
@@ -99,8 +92,29 @@ export async function handlePoap(context: HandlerContext) {
 }
 
 async function updatePoapDB(id: string, address: string) {
-  const poap = db?.data?.poaps?.find((poap) => poap.id === id);
+  const poap = await getPoapById(id);
   if (poap) poap.address = address;
   await db.write();
   return true;
 }
+async function getPoapByAddress(address: string) {
+  await db.read();
+  const poap = db?.data?.poaps?.find((poap) => poap.address === address);
+  return poap;
+}
+async function getPoapById(id: string) {
+  await db.read();
+  const poap = db?.data?.poaps?.find((poap) => poap.id === id);
+  return poap;
+}
+
+/*
+  //const url = `https://mint.poap.studio/claim-20/`; will not render the frame
+  //const url = `https://collectors.POAP.xyz/mint-v2/` will not render the frame (default poaps)
+  //const url = `https://dev.converse.xyz/poap/`; // we use this to render the frame
+  //const url = `http://localhost:3000/poap/`; // we use this to render the frame
+
+    // Here we use address
+    // Poap studio uses user_address
+    // In converse web  transform address to user_address
+    */
