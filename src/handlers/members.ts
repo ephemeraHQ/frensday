@@ -2,9 +2,11 @@ import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 import fs from "fs";
+import { isOnXMTP } from "../lib/resolver.js";
 import { clearMemory } from "../lib/gpt.js";
 import { clearInfoCache } from "../lib/resolver.js";
-import { isAnyBot } from "../lib/bots.js";
+import { isAnyBot, messageError } from "../lib/bots.js";
+
 import { SkillResponse } from "@xmtp/message-kit";
 
 const groupId = process.env.GROUP_ID as string;
@@ -18,6 +20,7 @@ export async function handleMembers(
     },
     group,
     client,
+    v2client,
   } = context;
 
   await db.read();
@@ -88,35 +91,33 @@ export async function handleMembers(
     );
     if (!subscriberExists) {
       let address = sender.address.toLowerCase();
-      const canMessage = await client.canMessage([address]);
-      console.log(canMessage);
-      if (!canMessage[address])
+      const { v2, v3 } = await isOnXMTP(client, v2client, address);
+      if (!v3)
         return {
           code: 400,
-          message: `
-Ooops, can't add you to the group.
-
-Tips:
-- You must use Converse mobile from the appstore.
-- Iphone: https://apps.apple.com/ar/app/converse-messenger/id1658819514
-- Android: https://play.google.com/store/apps/details?id=com.converse.prod
-
-If none of this works, please contact Fabri on: \n\t\thttps://converse.xyz/dm/fabri.converse.xyz`,
+          message: messageError,
         };
       const conversation = await client.conversations.getConversationById(
         groupId
       );
       if (conversation) {
-        const added = await conversation.addMembers([sender.address]);
-        console.log("added", added);
-        return {
-          code: 200,
-          message: "You have been added to the group",
-        };
+        try {
+          await conversation.addMembers([sender.address]);
+          await conversation.sync();
+          return {
+            code: 200,
+            message: "You have been added to the group",
+          };
+        } catch (error) {
+          return {
+            code: 400,
+            message: messageError,
+          };
+        }
       } else {
         return {
           code: 400,
-          message: `Ooops, Something went wrong. Please contact Fabri on: \n\t\thttps://converse.xyz/dm/fabri.converse.xyz`,
+          message: messageError,
         };
       }
     }

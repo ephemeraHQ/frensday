@@ -37,15 +37,15 @@ export async function handlePoap(context: HandlerContext) {
       const newPoap = poapTable.find((poap) => poap.address === "");
       console.log("newPoap", newPoap);
 
-      if (newPoap) {
+      if (newPoap?.id && newPoap?.address !== address) {
         // Assign the address to the new POAP
-        newPoap.address = address;
-        await db.write();
         clearChatHistory(sender.address);
         await context.send(`Here is your POAP`);
-        let poapURL = `${url}${newPoap.id}`;
+        let poapURL = `${url}${newPoap?.id}`;
         if (address) poapURL += `?address=${address}`;
         await context.send(poapURL);
+        updatePoapDB(newPoap.id, address);
+        //Write db
       } else {
         clearChatHistory(sender.address);
         await context.send(`No more POAPs available`);
@@ -80,13 +80,11 @@ export async function handlePoap(context: HandlerContext) {
     };
   } else if (command == "removepoap") {
     const { address } = params;
-    const poapTable = db?.data?.poaps;
-    const claimed = poapTable.find(
+    const poap = db?.data?.poaps?.find(
       (poap) => poap?.address?.toLowerCase() === address?.toLowerCase()
     );
-    if (claimed) {
-      claimed.address = "";
-      await db.write();
+    if (poap) {
+      updatePoapDB(poap.id, "");
     } else {
       return {
         code: 400,
@@ -95,7 +93,14 @@ export async function handlePoap(context: HandlerContext) {
     }
     return {
       code: 200,
-      message: `Your poap ${claimed?.id} has been removed`,
+      message: `Your poap ${poap?.id} has been removed`,
     };
   }
+}
+
+async function updatePoapDB(id: string, address: string) {
+  const poap = db?.data?.poaps?.find((poap) => poap.id === id);
+  if (poap) poap.address = address;
+  await db.write();
+  return true;
 }

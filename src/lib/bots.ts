@@ -12,7 +12,15 @@ export function isAnyBot(address: string) {
       bot.devAddress.toLowerCase() === address.toLowerCase()
   );
 }
+export const messageError = `Ooops, couldn't add you to the group. Please contact
+\nFabri\thttps://converse.xyz/dm/fabri.converse.xyz
+\nPeter\thttps://converse.xyz/dm/pmd.converse.xyz
 
+Tips:
+- You must use Converse mobile from the appstore to access groups
+\n\tIphone:\thttps://apps.apple.com/ar/app/converse-messenger/id1658819514
+\n\tAndroid:\thttps://play.google.com/store/apps/details?id=com.converse.prod
+        `;
 export async function getBotName(address: string) {
   return botAddresses.find(
     (bot) =>
