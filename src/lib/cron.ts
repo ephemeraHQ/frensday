@@ -1,9 +1,9 @@
 import cron from "node-cron";
-import { Client } from "@xmtp/xmtp-js";
+import { V2Client } from "@xmtp/message-kit";
 import { db } from "./db.js";
 import { fetchSpeakers } from "./eventapi.js";
 import fs from "fs/promises";
-import { textGeneration } from "./gpt.js";
+import { textGeneration } from "@xmtp/message-kit";
 import path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
@@ -39,7 +39,7 @@ export const fetchSpeakersCron = async () => {
   );
 };
 
-export async function sendUpdates(v2client: Client) {
+export async function sendUpdates(v2client: V2Client) {
   const conversations = await v2client.conversations.list();
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     Logging new messages to console ↴`);

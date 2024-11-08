@@ -1,6 +1,6 @@
 import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
-import { clearChatHistory } from "./members.js";
+import { clearChatHistory } from "../lib/utils.js";
 import { SkillResponse } from "@xmtp/message-kit";
 
 const { v2client: bittu } = await xmtpClient({

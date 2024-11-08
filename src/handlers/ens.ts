@@ -1,7 +1,7 @@
 import { HandlerContext, SkillResponse } from "@xmtp/message-kit";
-import { getUserInfo, clearInfoCache, isOnXMTP } from "../lib/resolver.js";
+import { getUserInfo, clearInfoCache, isOnXMTP } from "@xmtp/message-kit";
 import { isAddress } from "viem";
-import { clearMemory } from "../lib/gpt.js";
+import { clearMemory } from "@xmtp/message-kit";
 
 export const frameUrl = "https://ens.steer.fun/";
 export const ensUrl = "https://app.ens.domains/";

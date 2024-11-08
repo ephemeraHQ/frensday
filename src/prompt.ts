@@ -1,5 +1,5 @@
-import { UserInfo, PROMPT_USER_CONTENT } from "./lib/resolver.js";
-import { PROMPT_RULES, PROMPT_SKILLS_AND_EXAMPLES } from "./lib/gpt.js";
+import { UserInfo, PROMPT_USER_CONTENT } from "@xmtp/message-kit";
+import { PROMPT_RULES, PROMPT_SKILLS_AND_EXAMPLES } from "@xmtp/message-kit";
 import {
   replaceDeeplinks,
   getPersonality,

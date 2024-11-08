@@ -1,9 +1,8 @@
 import { HandlerContext, run } from "@xmtp/message-kit";
 import { agentHandler } from "./agent.js";
 import { fetchSpeakersCron } from "../lib/cron.js";
-import { xmtpClient } from "@xmtp/message-kit";
 import { isBot, BotAddress } from "../lib/bots.js";
-import { sendBroadcast } from "./members.js";
+import { sendBroadcast } from "../lib/utils.js";
 
 // const { v2client: earl } = await xmtpClient({
 //   privateKey: process.env.KEY_EARL,
