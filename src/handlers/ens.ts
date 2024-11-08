@@ -9,12 +9,13 @@ export const baseTxUrl = "https://base-tx-frame.vercel.app";
 
 export async function handleEns(
   context: HandlerContext
-): Promise<SkillResponse> {
+): Promise<SkillResponse | undefined> {
   const {
     message: {
       content: { command, params, sender },
     },
-    skill,
+    client,
+    v2client,
   } = context;
   if (command == "reset") {
     clearMemory();
@@ -87,13 +88,12 @@ export async function handleEns(
     }
     message += `\n\nWould you like to tip the domain owner for getting there first 🤣?`;
     message = message.trim();
-    if (
-      await isOnXMTP(
-        context.v2client,
-        data?.ensInfo?.ens,
-        data?.ensInfo?.address
-      )
-    ) {
+    let { v2, v3 } = await isOnXMTP(
+      context.client,
+      context.v2client,
+      data?.ensInfo?.address
+    );
+    if (v2) {
       await context.send(
         `Ah, this domains is in XMTP, you can message it directly: https://converse.xyz/dm/${domain}`
       );
@@ -118,7 +118,7 @@ export async function handleEns(
       };
     } else {
       let message = `Looks like ${domain} is already registered!`;
-      await skill("/cool " + domain);
+      await context.skill("/cool " + domain);
       return {
         code: 404,
         message,

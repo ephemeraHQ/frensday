@@ -2,7 +2,7 @@ import { HandlerContext } from "@xmtp/message-kit";
 import { textGeneration, processMultilineResponse } from "../lib/gpt.js";
 import { getUserInfo } from "../lib/resolver.js";
 import { system_prompt } from "../prompt.js";
-import { getBotAddress } from "../lib/bots.js";
+import { getBotAddress, messageError } from "../lib/bots.js";
 
 export async function agentHandler(context: HandlerContext, name: string) {
   if (!process?.env?.OPEN_AI_API_KEY) {
@@ -51,9 +51,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
     await processMultilineResponse(sender.address, reply, context);
   } catch (error) {
     console.error("Error during OpenAI call:", error);
-    await context.send(
-      "Oops looks like something went wrong. Please call my creator to fix me."
-    );
+    await context.send(messageError);
   }
 }
 
@@ -65,18 +63,15 @@ async function onboard(
   try {
     const addedToGroup = await context.skill("/add");
     if (addedToGroup?.code == 200) {
-      console.log("Added to group");
+      context.send("Successfully added to group");
     } else {
-      context.send(addedToGroup?.message as string);
-      return false;
+      context.send(messageError);
     }
     // Sleep for 30 seconds
     if (addedToGroup?.code == 200) {
       //onboard message
       const subscribe = await context.skill(`/subscribe ${senderAddress}`);
-      if (subscribe?.code == 200) console.log(`User subscribed`);
-      else console.log(`User not subscribed`);
-
+      console.log(subscribe?.message);
       const groupId = process.env.GROUP_ID;
       await context.send(
         `Welcome ${name}! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`
@@ -91,7 +86,6 @@ async function onboard(
       }, 30000); // 30000 milliseconds = 30 seconds
 
       const sendBittu = await context.skill(`/sendbittu ${senderAddress}`);
-      console.log("Send Bittu", sendBittu);
       if (sendBittu?.code == 200) return true;
       else return false;
     }

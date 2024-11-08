@@ -1,15 +1,15 @@
 import { HandlerContext, run } from "@xmtp/message-kit";
 import { agentHandler } from "./agent.js";
-import { startCron } from "../lib/cron.js";
+import { fetchSpeakersCron } from "../lib/cron.js";
 import { xmtpClient } from "@xmtp/message-kit";
 import { isBot, BotAddress } from "../lib/bots.js";
 import { sendBroadcast } from "./members.js";
 
-const { v2client: earl } = await xmtpClient({
-  privateKey: process.env.KEY_EARL,
-  hideInitLogMessage: true,
-});
-startCron(earl);
+// const { v2client: earl } = await xmtpClient({
+//   privateKey: process.env.KEY_EARL,
+//   hideInitLogMessage: true,
+// });
+fetchSpeakersCron();
 
 export async function mainHandler(appConfig: BotAddress) {
   const { name } = appConfig;
@@ -42,7 +42,7 @@ export async function mainHandler(appConfig: BotAddress) {
       }
       //Disable for groups
       if (group) {
-        context.reply("Sorry i dont work inside groups 🙈");
+        context.reply("Sorry i dont work inside groups 🙈... yet ;)");
         return;
       }
       if (typeId !== "text") return;

@@ -1,6 +1,8 @@
-import type { Client } from "@xmtp/xmtp-js";
 import { isAddress } from "viem";
+import { Client as ClientV3 } from "@xmtp/node-sdk";
+import { Client as ClientV2 } from "@xmtp/xmtp-js";
 import type { HandlerContext } from "@xmtp/message-kit";
+import { db } from "../lib/db.js";
 
 export const converseEndpointURL =
   "https://converse-website-git-endpoit-ephemerahq.vercel.app";
@@ -21,7 +23,9 @@ export type UserInfo = {
   converseUsername?: string | undefined;
   ensInfo?: EnsData | undefined;
   avatar?: string | undefined;
+  converseEndpoint?: string | undefined;
 };
+
 export interface EnsData {
   address?: string;
   avatar?: string;
@@ -49,84 +53,143 @@ export const clearInfoCache = () => {
 export const getUserInfo = async (
   key: string,
   clientAddress?: string,
-  context?: HandlerContext,
+  context?: HandlerContext
 ): Promise<UserInfo | null> => {
-  let data: UserInfo = infoCache.get(key) || {
-    ensDomain: undefined,
-    address: undefined,
-    converseUsername: undefined,
-    ensInfo: undefined,
-    preferredName: undefined,
-  };
-  if (isAddress(clientAddress || "")) {
-    data.address = clientAddress;
-  } else if (isAddress(key || "")) {
-    data.address = key;
-  } else if (key?.includes(".eth")) {
-    data.ensDomain = key;
-  } else if (key == "@user" || key == "@me" || key == "@bot") {
-    data.address = clientAddress;
-    data.ensDomain = key.replace("@", "") + ".eth";
-    data.converseUsername = key.replace("@", "");
-  } else if (key == "@alix") {
-    data.address = "0x3a044b218BaE80E5b9E16609443A192129A67BeA";
-    data.converseUsername = "alix";
-  } else if (key == "@bo") {
-    data.address = "0xbc3246461ab5e1682baE48fa95172CDf0689201a";
-    data.converseUsername = "bo";
-  } else {
-    data.converseUsername = key;
-  }
-  data.preferredName = data.ensDomain || data.converseUsername || "Friend";
-  let keyToUse = data.address || data.ensDomain || data.converseUsername;
-  let cacheData = keyToUse && infoCache.get(keyToUse);
-  //console.log("Getting user info", { cacheData, keyToUse, data });
-  if (cacheData) return cacheData;
-
-  context?.send(
-    "Hey there! Give me a sec while I fetch info about you first...",
-  );
-  if (keyToUse?.includes(".eth")) {
-    const response = await fetch(`https://ensdata.net/${keyToUse}`);
-    const ensData: EnsData = (await response.json()) as EnsData;
-    //console.log("Ens data", ensData);
-    if (ensData) {
-      data.ensInfo = ensData;
-      data.ensDomain = ensData?.ens;
-      data.address = ensData?.address;
+  try {
+    // Validate inputs
+    if (!key && !clientAddress) {
+      throw new Error("No key or client address provided.");
     }
-  } else if (keyToUse) {
-    keyToUse = keyToUse.replace("@", "");
-    const response = await fetch(`${converseEndpointURL}/profile/${keyToUse}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        peer: keyToUse,
-      }),
-    });
-    const converseData = (await response.json()) as ConverseProfile;
-    if (process.env.MSG_LOG === "true")
-      //console.log("Converse data", keyToUse, converseData);
-      data.converseUsername =
-        converseData?.formattedName || converseData?.name || undefined;
-    data.address = converseData?.address || undefined;
-    data.avatar = converseData?.avatar || undefined;
-  }
 
-  data.preferredName = data.ensDomain || data.converseUsername || "Friend";
-  if (data.address) infoCache.set(data.address, data);
-  return data;
+    let data: UserInfo = infoCache.get(key) || {
+      ensDomain: undefined,
+      address: undefined,
+      converseUsername: undefined,
+      ensInfo: undefined,
+      avatar: undefined,
+      converseEndpoint: undefined,
+      preferredName: undefined,
+    };
+
+    // Determine user information based on provided key
+    if (isAddress(clientAddress || "")) {
+      data.address = clientAddress;
+    } else if (isAddress(key || "")) {
+      data.address = key;
+    } else if (key.includes(".eth")) {
+      data.ensDomain = key;
+    } else if (["@user", "@me", "@bot"].includes(key)) {
+      data.address = clientAddress;
+      data.ensDomain = key.replace("@", "") + ".eth";
+      data.converseUsername = key.replace("@", "");
+    } else if (key === "@alix") {
+      data.address = "0x3a044b218BaE80E5b9E16609443A192129A67BeA";
+      data.converseUsername = "alix";
+    } else if (key === "@bo") {
+      data.address = "0xbc3246461ab5e1682baE48fa95172CDf0689201a";
+      data.converseUsername = "bo";
+    } else {
+      data.converseUsername = key;
+    }
+
+    data.preferredName = data.ensDomain || data.converseUsername || "Friend";
+    const keyToUse = data.address || data.ensDomain || data.converseUsername;
+
+    if (!keyToUse) {
+      throw new Error(
+        "Unable to determine a valid key for fetching user info."
+      );
+    }
+
+    // Check cache for existing data
+    const cacheData = infoCache.get(keyToUse);
+    if (cacheData) {
+      return cacheData;
+    }
+
+    // Notify user about the fetching process
+    if (context) {
+      await context.send(
+        "Hey there! Give me a sec while I fetch info about you first..."
+      );
+    }
+
+    // Fetch data based on ENS domain or Converse username
+    if (keyToUse.includes(".eth")) {
+      // Fetch ENS data
+      try {
+        const response = await fetch(`https://ensdata.net/${keyToUse}`);
+        if (!response.ok) {
+          throw new Error(
+            `ENS data request failed with status ${response.status}`
+          );
+        }
+        const ensData = (await response.json()) as EnsData;
+        if (ensData) {
+          data.ensInfo = ensData;
+          data.ensDomain = ensData.ens || data.ensDomain;
+          data.address = ensData.address || data.address;
+          data.avatar = ensData.avatar_url || data.avatar;
+        }
+      } catch (error) {
+        console.error("Failed to fetch ENS data:", error);
+      }
+    } else {
+      // Fetch Converse profile data
+      try {
+        const username = keyToUse.replace("@", "");
+        const converseEndpoint = `${converseEndpointURL}/profile/${username}`;
+        const response = await fetch(converseEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ peer: username }),
+        });
+        if (!response.ok) {
+          throw new Error(
+            `Converse profile request failed with status ${response.status}`
+          );
+        }
+        const converseData = (await response.json()) as ConverseProfile;
+        if (converseData) {
+          data.converseUsername =
+            converseData.formattedName ||
+            converseData.name ||
+            data.converseUsername;
+          data.address = converseData.address || data.address;
+          data.avatar = converseData.avatar || data.avatar;
+          data.converseEndpoint = converseEndpoint;
+        }
+      } catch (error) {
+        console.error("Failed to fetch Converse profile:", error);
+      }
+    }
+
+    data.preferredName = data.ensDomain || data.converseUsername || "Friend";
+    infoCache.set(keyToUse, data);
+    return data;
+  } catch (error) {
+    console.error("An error occurred in getUserInfo:", error);
+    if (context) {
+      await context.send(
+        "Sorry, I encountered an error while fetching your information."
+      );
+    }
+    return null;
+  }
 };
 export const isOnXMTP = async (
-  client: Client,
-  domain: string | undefined,
-  address: string | undefined,
+  v3client: ClientV3,
+  v2client: ClientV2,
+  address: string | undefined
 ) => {
-  if (domain == "fabri.eth") return false;
-  if (address) return (await client.canMessage([address])).length > 0;
+  let v2 = false;
+  let v3 = false;
+  if (address) v3 = (await v3client.canMessage([address]))[address];
+  if (address) v2 = await v2client.canMessage(address);
+  return { v2, v3 };
 };
 
 export const PROMPT_USER_CONTENT = (userInfo: UserInfo) => {
@@ -142,13 +205,30 @@ User context:
   if (converseUsername)
     prompt += `\n- Converse username is: ${converseUsername}`;
 
-  prompt = prompt.replace(
-    "{ADDRESS}",
-    address || "0x3C348aEF831a28f80FF261B028a0A9b2491C0BA6",
-  );
-  prompt = prompt.replace("{ENS_DOMAIN}", ensDomain || "vitalik.eth");
-  prompt = prompt.replace("{CONVERSE_USERNAME}", converseUsername || "@friend");
-  prompt = prompt.replace("{PREFERRED_NAME}", preferredName || "Friend");
+  return prompt;
+};
 
+export const PROMPT_REPLACE_VARIABLES = (
+  prompt: string,
+  address: string,
+  userInfo: UserInfo | undefined,
+  tag: string
+) => {
+  if (!userInfo) {
+    userInfo = {
+      preferredName: address,
+      address: address,
+      ensDomain: address,
+      converseUsername: address,
+    };
+  }
+  prompt = prompt.replace("{ADDRESS}", userInfo.address || "");
+  prompt = prompt.replace("{ENS_DOMAIN}", userInfo.ensDomain || "");
+  prompt = prompt.replace(
+    "{CONVERSE_USERNAME}",
+    userInfo.converseUsername || ""
+  );
+  prompt = prompt.replace("{PREFERRED_NAME}", userInfo.preferredName || "");
+  prompt = prompt.replace("{NAME}", tag);
   return prompt;
 };

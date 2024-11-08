@@ -2,9 +2,11 @@ import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 import fs from "fs";
+import { isOnXMTP } from "../lib/resolver.js";
 import { clearMemory } from "../lib/gpt.js";
 import { clearInfoCache } from "../lib/resolver.js";
-import { isAnyBot } from "../lib/bots.js";
+import { isAnyBot, messageError } from "../lib/bots.js";
+
 import { SkillResponse } from "@xmtp/message-kit";
 
 const groupId = process.env.GROUP_ID as string;
@@ -18,21 +20,20 @@ export async function handleMembers(
     },
     group,
     client,
+    v2client,
   } = context;
 
   await db.read();
 
   if (command == "reset") {
-    clearChatHistory();
-    context.send("Resetting chat history");
-    //remove from group
-    const response = await context.skill("/remove");
-    if (response && response.message) context.send(response.message);
-    const response2 = await context.skill("/unsubscribe");
-    if (response2 && response2.message) context.send(response2.message);
-
-    const response3 = await context.skill(`/removepoap ${sender.address}`);
-    if (response3 && response3.message) context.send(response3.message);
+    const response = await clearChatHistory();
+    if (response?.message) context.send(response.message);
+    const response2 = await context.skill("/remove");
+    if (response2?.message) context.send(response2.message);
+    const response3 = await context.skill("/unsubscribe");
+    if (response3?.message) context.send(response3.message);
+    const response4 = await context.skill(`/removepoap ${sender.address}`);
+    if (response4?.message) context.send(response4.message);
 
     return {
       code: 200,
@@ -88,35 +89,33 @@ export async function handleMembers(
     );
     if (!subscriberExists) {
       let address = sender.address.toLowerCase();
-      const canMessage = await client.canMessage([address]);
-      console.log(canMessage);
-      if (!canMessage[address])
+      const { v2, v3 } = await isOnXMTP(client, v2client, address);
+      if (!v3)
         return {
           code: 400,
-          message: `
-Ooops, can't add you to the group.
-
-Tips:
-- You must use Converse mobile from the appstore.
-- Iphone: https://apps.apple.com/ar/app/converse-messenger/id1658819514
-- Android: https://play.google.com/store/apps/details?id=com.converse.prod
-
-If none of this works, please contact Fabri on: \n\t\thttps://converse.xyz/dm/fabri.converse.xyz`,
+          message: messageError,
         };
       const conversation = await client.conversations.getConversationById(
         groupId
       );
       if (conversation) {
-        const added = await conversation.addMembers([sender.address]);
-        console.log("added", added);
-        return {
-          code: 200,
-          message: "You have been added to the group",
-        };
+        try {
+          await conversation.addMembers([sender.address]);
+          await conversation.sync();
+          return {
+            code: 200,
+            message: "You have been added to the group",
+          };
+        } catch (error) {
+          return {
+            code: 400,
+            message: messageError,
+          };
+        }
       } else {
         return {
           code: 400,
-          message: `Ooops, Something went wrong. Please contact Fabri on: \n\t\thttps://converse.xyz/dm/fabri.converse.xyz`,
+          message: messageError,
         };
       }
     }
@@ -183,9 +182,12 @@ If none of this works, please contact Fabri on: \n\t\thttps://converse.xyz/dm/fa
     const subscribed = onboarded.filter(
       (subscriber) => subscriber.status === "subscribed"
     );
-    context.send(
-      `This is how frENSday is going:\n ${claimed.length} POAPs claimed out of ${poapTable.length}\n ${onboarded.length} users onboarded\n ${subscribed.length} users subscribed`
-    );
+    let message = `This is how frENSday is going:\n ${claimed.length} POAPs claimed out of ${poapTable.length}\n ${onboarded.length} users onboarded\n ${subscribed.length} users subscribed`;
+
+    return {
+      code: 200,
+      message,
+    };
   } else if (command == "send") {
     const { message } = params;
     return await sendBroadcast(message, context, sender.address);
@@ -228,6 +230,10 @@ export async function sendBroadcast(
 export async function clearChatHistory(address?: string) {
   clearMemory();
   clearInfoCache();
+  return {
+    code: 200,
+    message: "Chat history cleared",
+  };
 }
 export function getAllowedAddresses() {
   return [

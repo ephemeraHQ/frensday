@@ -1,13 +1,16 @@
 import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 import { clearChatHistory } from "./members.js";
+import { SkillResponse } from "@xmtp/message-kit";
 
 const { v2client: bittu } = await xmtpClient({
   privateKey: process.env.KEY_BITTU,
   hideInitLogMessage: true,
 });
 
-export async function handlePoap(context: HandlerContext) {
+export async function handlePoap(
+  context: HandlerContext
+): Promise<SkillResponse | undefined> {
   const {
     message: {
       content: { content: text, command, params },
@@ -15,48 +18,41 @@ export async function handlePoap(context: HandlerContext) {
     },
   } = context;
 
-  //const url = `https://mint.poap.studio/claim-20/`; will not render the frame
-  //const url = `https://collectors.POAP.xyz/mint-v2/` will not render the frame (default poaps)
   const url = `https://converse.xyz/poap/`; // we use this to render the frame
-  //const url = `https://dev.converse.xyz/poap/`; // we use this to render the frame
-  //const url = `http://localhost:3000/poap/`; // we use this to render the frame
 
-  await db.read();
   if (command == "poap") {
     // Destructure and validate parameters for the ens command
     const { address } = params;
-    const poapTable = db?.data?.poaps;
     // Find a POAP with the given address
-    const poap = poapTable.find((poap) => poap.address === address);
-
-    // Here we use address
-    // Poap studio uses user_address
-    // In converse web  transform address to user_address
+    const poap = await getPoapByAddress(address);
     if (!poap) {
       // Find a new POAP with an empty address
-      const newPoap = poapTable.find((poap) => poap.address === "");
+      const newPoap = await getPoapByAddress("");
       console.log("newPoap", newPoap);
 
-      if (newPoap) {
-        // Assign the address to the new POAP
-        newPoap.address = address;
-        await db.write();
-        clearChatHistory(sender.address);
-        await context.send(`Here is your POAP`);
-        let poapURL = `${url}${newPoap.id}`;
+      if (newPoap?.id && address) {
+        let poapURL = `${url}${newPoap?.id}`;
         if (address) poapURL += `?address=${address}`;
-        await context.send(poapURL);
+        await updatePoapDB(newPoap.id, address);
+        await clearChatHistory(sender.address);
+        return {
+          code: 200,
+          message: `Here is your POAP\n${poapURL}`,
+        };
       } else {
         clearChatHistory(sender.address);
-        await context.send(`No more POAPs available`);
+        return {
+          code: 400,
+          message: "No more POAPs available",
+        };
       }
     } else if (poap) {
-      clearChatHistory(sender.address);
-
-      await context.send(`Here is the POAP you already claimed`);
       let poapURL = `${url}${poap?.id}`;
       if (address) poapURL += `?address=${address}`;
-      await context.send(poapURL);
+      return {
+        code: 200,
+        message: `Here is the POAP you already claimed\n${poapURL}`,
+      };
     }
   } else if (command == "sendbittu") {
     const conversations = await bittu.conversations.list();
@@ -80,13 +76,9 @@ export async function handlePoap(context: HandlerContext) {
     };
   } else if (command == "removepoap") {
     const { address } = params;
-    const poapTable = db?.data?.poaps;
-    const claimed = poapTable.find(
-      (poap) => poap?.address?.toLowerCase() === address?.toLowerCase()
-    );
-    if (claimed) {
-      claimed.address = "";
-      await db.write();
+    const poap = await getPoapByAddress(address);
+    if (poap) {
+      updatePoapDB(poap.id, "");
     } else {
       return {
         code: 400,
@@ -95,7 +87,35 @@ export async function handlePoap(context: HandlerContext) {
     }
     return {
       code: 200,
-      message: `Your poap ${claimed?.id} has been removed`,
+      message: `Your poap ${poap?.id} has been removed`,
     };
   }
 }
+
+async function updatePoapDB(id: string, address: string) {
+  const poap = await getPoapById(id);
+  if (poap) poap.address = address;
+  await db.write();
+  return true;
+}
+async function getPoapByAddress(address: string) {
+  await db.read();
+  const poap = db?.data?.poaps?.find((poap) => poap.address === address);
+  return poap;
+}
+async function getPoapById(id: string) {
+  await db.read();
+  const poap = db?.data?.poaps?.find((poap) => poap.id === id);
+  return poap;
+}
+
+/*
+  //const url = `https://mint.poap.studio/claim-20/`; will not render the frame
+  //const url = `https://collectors.POAP.xyz/mint-v2/` will not render the frame (default poaps)
+  //const url = `https://dev.converse.xyz/poap/`; // we use this to render the frame
+  //const url = `http://localhost:3000/poap/`; // we use this to render the frame
+
+    // Here we use address
+    // Poap studio uses user_address
+    // In converse web  transform address to user_address
+    */
