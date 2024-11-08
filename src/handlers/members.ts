@@ -26,16 +26,14 @@ export async function handleMembers(
   await db.read();
 
   if (command == "reset") {
-    clearChatHistory();
-    context.send("Resetting chat history");
-    //remove from group
-    const response = await context.skill("/remove");
-    if (response && response.message) context.send(response.message);
-    const response2 = await context.skill("/unsubscribe");
-    if (response2 && response2.message) context.send(response2.message);
-
-    const response3 = await context.skill(`/removepoap ${sender.address}`);
-    if (response3 && response3.message) context.send(response3.message);
+    const response = await clearChatHistory();
+    if (response?.message) context.send(response.message);
+    const response2 = await context.skill("/remove");
+    if (response2?.message) context.send(response2.message);
+    const response3 = await context.skill("/unsubscribe");
+    if (response3?.message) context.send(response3.message);
+    const response4 = await context.skill(`/removepoap ${sender.address}`);
+    if (response4?.message) context.send(response4.message);
 
     return {
       code: 200,
@@ -184,9 +182,12 @@ export async function handleMembers(
     const subscribed = onboarded.filter(
       (subscriber) => subscriber.status === "subscribed"
     );
-    context.send(
-      `This is how frENSday is going:\n ${claimed.length} POAPs claimed out of ${poapTable.length}\n ${onboarded.length} users onboarded\n ${subscribed.length} users subscribed`
-    );
+    let message = `This is how frENSday is going:\n ${claimed.length} POAPs claimed out of ${poapTable.length}\n ${onboarded.length} users onboarded\n ${subscribed.length} users subscribed`;
+
+    return {
+      code: 200,
+      message,
+    };
   } else if (command == "send") {
     const { message } = params;
     return await sendBroadcast(message, context, sender.address);
@@ -229,6 +230,10 @@ export async function sendBroadcast(
 export async function clearChatHistory(address?: string) {
   clearMemory();
   clearInfoCache();
+  return {
+    code: 200,
+    message: "Chat history cleared",
+  };
 }
 export function getAllowedAddresses() {
   return [

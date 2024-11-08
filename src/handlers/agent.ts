@@ -71,9 +71,7 @@ async function onboard(
     if (addedToGroup?.code == 200) {
       //onboard message
       const subscribe = await context.skill(`/subscribe ${senderAddress}`);
-      if (subscribe?.code == 200) console.log(`User subscribed`);
-      else console.log(`User not subscribed`);
-
+      console.log(subscribe?.message);
       const groupId = process.env.GROUP_ID;
       await context.send(
         `Welcome ${name}! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`

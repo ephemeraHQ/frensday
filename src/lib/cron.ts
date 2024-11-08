@@ -20,8 +20,7 @@ async function saveSpeakersToFile() {
   await fs.writeFile(SPEAKERS_FILE_PATH, formattedSpeakerInfo);
 }
 
-export async function startCron(v2client: Client) {
-  const conversations = await v2client.conversations.list();
+export const fetchSpeakersCron = async () => {
   // Ensure speakers file exists or create it for the first time
   try {
     await fs.access(SPEAKERS_FILE_PATH);
@@ -38,10 +37,12 @@ export async function startCron(v2client: Client) {
   console.log(
     `   - Cron job started to fetch speakers every 10 minutes\n   - Earl will send updates to ${subscribers?.length} subscribers every 2 days`
   );
+};
 
+export async function sendUpdates(v2client: Client) {
+  const conversations = await v2client.conversations.list();
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     Logging new messages to console ↴`);
-  // Cron job to send updates once a day at midnight UTC
   cron.schedule(
     "0 0 */2 * *", // Every 2 days at midnight UTC
     async () => {

@@ -1,6 +1,7 @@
 import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 import { clearChatHistory } from "./members.js";
+import { SkillResponse } from "@xmtp/message-kit";
 
 const { v2client: bittu } = await xmtpClient({
   privateKey: process.env.KEY_BITTU,
@@ -9,7 +10,7 @@ const { v2client: bittu } = await xmtpClient({
 
 export async function handlePoap(
   context: HandlerContext
-): Promise<{ code: number; message: string } | undefined> {
+): Promise<SkillResponse | undefined> {
   const {
     message: {
       content: { content: text, command, params },
