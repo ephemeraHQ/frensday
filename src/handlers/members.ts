@@ -7,8 +7,12 @@ import fs from "fs";
 import { isOnXMTP } from "../lib/resolver.js";
 import { clearMemory } from "../lib/gpt.js";
 import { clearInfoCache } from "../lib/resolver.js";
-import { isAnyBot, messageError } from "../lib/bots.js";
+import { isAnyBot } from "../lib/bots.js";
+import { xmtpClient } from "@xmtp/message-kit";
 
+const { client: fabriTest } = await xmtpClient({
+  privateKey: process.env.KEY_FABRI_TEST,
+});
 import { SkillResponse } from "@xmtp/message-kit";
 
 const groupId = process.env.GROUP_ID as string;
@@ -21,6 +25,7 @@ export async function handleMembers(
       sender,
     },
     group,
+    members,
     client,
     v2client,
   } = context;
@@ -162,6 +167,40 @@ export async function handleMembers(
   } else if (command == "send") {
     const { message } = params;
     return await sendBroadcast(message, context, sender.address);
+  } else if (command == "readd") {
+    console.log("readd");
+    const address = "0xF8cd371Ae43e1A6a9bafBB4FD48707607D24aE43";
+    console.log("fabriTest", fabriTest.accountAddress);
+    await fabriTest.conversations.sync();
+    for (const conversation of await fabriTest.conversations.list()) {
+      console.log(conversation.id);
+    }
+    const conversation = await fabriTest.conversations.getConversationById(
+      groupId.toLowerCase()
+    );
+    console.log("conversation", conversation?.id);
+    if (conversation) {
+      console.log("adding");
+      await conversation?.sync();
+      console.log("synced");
+      await conversation?.removeMembers([address.toLowerCase()]);
+      console.log("removed");
+      await conversation?.sync();
+      console.log("synced");
+      await conversation?.addMembers([address.toLowerCase()]);
+      console.log("added");
+      await conversation?.sync();
+      console.log("synced");
+      const members = await conversation?.members();
+      if (members) {
+        for (const member of members) {
+          if (member.accountAddresses[0] === address) {
+            console.log("added");
+          }
+        }
+      }
+    }
+    context.send("done");
   } else {
     return {
       code: 400,
@@ -191,6 +230,7 @@ async function addToGroup(
     );
     console.log("ADD TO GROUP: conversation", conversation);
     await conversation?.sync();
+    //DONT TOUCH THIS LINE
     await conversation?.addMembers([lowerAddress]);
     console.log("ADD TO GROUP: conversation synced");
     await conversation?.sync();

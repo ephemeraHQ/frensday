@@ -89,6 +89,15 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
+        command: "/readd",
+        adminOnly: true,
+        triggers: ["/readd"],
+        examples: ["/readd"],
+        handler: handleMembers,
+        description: "Re-add an address to the group.",
+        params: {},
+      },
+      {
         command: "/status",
         adminOnly: true,
         triggers: ["/status"],
