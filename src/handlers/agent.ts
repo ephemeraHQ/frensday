@@ -14,7 +14,6 @@ export async function agentHandler(context: HandlerContext, name: string) {
       content: { content, params },
       sender,
     },
-    skill,
   } = context;
   try {
     const userInfo = await getUserInfo(sender.address);
@@ -27,7 +26,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
     let systemPrompt = system_prompt(name, userInfo);
     //Onboarding
     if (name === "earl") {
-      const exists = await skill(`/exists`);
+      const exists = await context.executeSkill(`/exists`);
       if (exists?.code == 400) {
         context?.send(
           "Hey there! Give me a sec while I fetch info about you first..."
@@ -61,21 +60,22 @@ async function onboard(
   senderAddress: string
 ) {
   try {
-    const addedToGroup = await context.skill("/add");
+    const addedToGroup = await context.executeSkill("/add");
     if (addedToGroup?.code == 200) {
-      context.send("Successfully added to group");
+      await context.send("Successfully added to group");
     } else {
-      context.send(messageError);
+      await context.send(messageError);
     }
     // Sleep for 30 seconds
     if (addedToGroup?.code == 200) {
       //onboard message
-      const subscribe = await context.skill(`/subscribe ${senderAddress}`);
-      console.log(subscribe?.message);
+      await context.executeSkill(`/subscribe ${senderAddress}`);
       const groupId = process.env.GROUP_ID;
       await context.send(
         `Welcome ${name}! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`
       );
+
+      await context.executeSkill(`/sendbittu ${senderAddress}`);
 
       setTimeout(() => {
         context.send(
@@ -84,10 +84,6 @@ async function onboard(
           )} for a exclusive POAP 😉`
         );
       }, 30000); // 30000 milliseconds = 30 seconds
-
-      const sendBittu = await context.skill(`/sendbittu ${senderAddress}`);
-      if (sendBittu?.code == 200) return true;
-      else return false;
     }
   } catch (error) {
     console.log("Error adding to group", error);

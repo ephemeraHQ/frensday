@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
+import { Client } from "@xmtp/node-sdk";
 import { db } from "../lib/db.js";
 import fs from "fs";
 import { isOnXMTP } from "../lib/resolver.js";
@@ -28,11 +29,13 @@ export async function handleMembers(
   if (command == "reset") {
     const response = await clearChatHistory();
     if (response?.message) context.send(response.message);
-    const response2 = await context.skill("/remove");
+    const response2 = await context.executeSkill("/remove");
     if (response2?.message) context.send(response2.message);
-    const response3 = await context.skill("/unsubscribe");
+    const response3 = await context.executeSkill("/unsubscribe");
     if (response3?.message) context.send(response3.message);
-    const response4 = await context.skill(`/removepoap ${sender.address}`);
+    const response4 = await context.executeSkill(
+      `/removepoap ${sender.address}`
+    );
     if (response4?.message) context.send(response4.message);
 
     return {
@@ -95,23 +98,12 @@ export async function handleMembers(
           code: 400,
           message: messageError,
         };
-      const conversation = await client.conversations.getConversationById(
-        groupId
-      );
-      if (conversation) {
-        try {
-          await conversation.addMembers([sender.address]);
-          await conversation.sync();
-          return {
-            code: 200,
-            message: "You have been added to the group",
-          };
-        } catch (error) {
-          return {
-            code: 400,
-            message: messageError,
-          };
-        }
+      const group = await addToGroup(groupId, client, address);
+      if (group) {
+        return {
+          code: 200,
+          message: "You have been added to the group",
+        };
       } else {
         return {
           code: 400,
@@ -198,6 +190,35 @@ export async function handleMembers(
     };
   }
 }
+
+async function addToGroup(
+  groupId: string,
+  client: Client,
+  senderAddress: string
+) {
+  const conversation = await client.conversations.getConversationById(groupId);
+  await conversation?.sync();
+  await conversation?.addMembers([senderAddress]);
+  await conversation?.sync();
+  const members = await conversation?.members();
+
+  let retries = 0;
+  while (true) {
+    if (members) {
+      for (const member of members) {
+        if (member.accountAddresses.includes(senderAddress)) {
+          return true;
+        }
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    retries++;
+    if (retries > 5) {
+      return false;
+    }
+  }
+}
+
 export async function sendBroadcast(
   message: string,
   context: HandlerContext,

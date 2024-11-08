@@ -118,7 +118,7 @@ export async function handleEns(
       };
     } else {
       let message = `Looks like ${domain} is already registered!`;
-      await context.skill("/cool " + domain);
+      await context.executeSkill("/cool " + domain);
       return {
         code: 404,
         message,
