@@ -2,6 +2,7 @@ import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
 import { Client } from "@xmtp/node-sdk";
 import { db } from "../lib/db.js";
+import { Client as V2Client } from "@xmtp/xmtp-js";
 import fs from "fs";
 import { isOnXMTP } from "../lib/resolver.js";
 import { clearMemory } from "../lib/gpt.js";
@@ -90,31 +91,9 @@ export async function handleMembers(
     const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
     );
-    if (!subscriberExists) {
-      let address = sender.address.toLowerCase();
-      const { v2, v3 } = await isOnXMTP(client, v2client, address);
-      if (!v3)
-        return {
-          code: 400,
-          message: messageError,
-        };
-      const group = await addToGroup(groupId, client, address);
-      if (group) {
-        return {
-          code: 200,
-          message: "You have been added to the group",
-        };
-      } else {
-        return {
-          code: 400,
-          message: messageError,
-        };
-      }
-    }
-    return {
-      code: 400,
-      message: "You are already in the group",
-    };
+    if (!subscriberExists) sender.address.toLowerCase();
+
+    return await addToGroup(groupId, client, v2client, sender.address);
   } else if (command == "remove") {
     const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
@@ -194,28 +173,51 @@ export async function handleMembers(
 async function addToGroup(
   groupId: string,
   client: Client,
+  v2client: V2Client,
   senderAddress: string
-) {
-  const conversation = await client.conversations.getConversationById(groupId);
-  await conversation?.sync();
-  await conversation?.addMembers([senderAddress]);
-  await conversation?.sync();
-  const members = await conversation?.members();
+): Promise<{ code: number; message: string }> {
+  try {
+    let lowerAddress = senderAddress.toLowerCase();
+    const { v2, v3 } = await isOnXMTP(client, v2client, lowerAddress);
+    console.log("ADD TO GROUP: v2", v2);
+    console.log("ADD TO GROUP: v3", v3);
+    if (!v3)
+      return {
+        code: 400,
+        message: "You dont seem to have a v3 identity ",
+      };
+    const conversation = await client.conversations.getConversationById(
+      groupId
+    );
+    console.log("ADD TO GROUP: conversation", conversation);
+    await conversation?.sync();
+    await conversation?.addMembers([lowerAddress]);
+    console.log("ADD TO GROUP: conversation synced");
+    await conversation?.sync();
+    const members = await conversation?.members();
+    console.log("ADD TO GROUP: members", members);
 
-  let retries = 0;
-  while (true) {
     if (members) {
       for (const member of members) {
-        if (member.accountAddresses.includes(senderAddress)) {
-          return true;
+        let lowerMemberAddress = member.accountAddresses[0].toLowerCase();
+        console.log("ADD TO GROUP: member", lowerMemberAddress);
+        if (lowerMemberAddress === lowerAddress) {
+          return {
+            code: 200,
+            message: "You have been added to the group",
+          };
         }
       }
     }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    retries++;
-    if (retries > 5) {
-      return false;
-    }
+    return {
+      code: 400,
+      message: "Failed to add to group",
+    };
+  } catch (error) {
+    return {
+      code: 400,
+      message: "Failed to add to group",
+    };
   }
 }
 

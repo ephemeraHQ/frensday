@@ -2,7 +2,6 @@ import { isAddress } from "viem";
 import { Client as ClientV3 } from "@xmtp/node-sdk";
 import { Client as ClientV2 } from "@xmtp/xmtp-js";
 import type { HandlerContext } from "@xmtp/message-kit";
-import { db } from "../lib/db.js";
 
 export const converseEndpointURL =
   "https://converse-website-git-endpoit-ephemerahq.vercel.app";
@@ -185,11 +184,12 @@ export const isOnXMTP = async (
   v2client: ClientV2,
   address: string | undefined
 ) => {
-  let v2 = false;
-  let v3 = false;
-  if (address) v3 = (await v3client.canMessage([address]))[address];
-  if (address) v2 = await v2client.canMessage(address);
-  return { v2, v3 };
+  let lowerAddress = address?.toLowerCase();
+  let v2 = await v2client.canMessage(lowerAddress || "");
+  let v3 = await v3client.canMessage([lowerAddress || ""]);
+  console.warn("RESOLVER: IS ON XMTP: v2", v2);
+  console.warn("RESOLVER: IS ON XMTP: v3", v3[lowerAddress || ""]);
+  return { v2, v3: v3[lowerAddress || ""] };
 };
 
 export const PROMPT_USER_CONTENT = (userInfo: UserInfo) => {
