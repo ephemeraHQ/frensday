@@ -168,12 +168,23 @@ export async function handleMembers(
     //await reAddUsers([address], groupId);
     context.send("done");
   } else if (command == "members") {
+    //get v2 conversations
+    console.log("getting v2 conversations");
+    const conversations = await v2client.conversations.list();
+    console.log(conversations.length);
+    for (const conversation of conversations) {
+      console.log(conversation.peerAddress);
+    }
+    console.log("exported conversations", conversations.length);
+    await client.conversations.sync();
     const conversation = await client.conversations.getConversationById(
       groupId
     );
-    await conversation?.sync();
     const members = await conversation?.members();
-    console.log(members?.length);
+    console.log("exported members", members?.length);
+    for (const member of members ?? []) {
+      console.log(member.accountAddresses[0]);
+    }
     context.send(`${members?.length} members in the group`);
   } else {
     return {
