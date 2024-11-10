@@ -101,8 +101,8 @@ export async function clearChatHistory(address?: string) {
 }
 export function getAllowedAddresses() {
   return [
-    "0xa6d9b3de32c76950d47f9867e2a7089f78c2ce8b".toLowerCase(),
-    "0x277c0dd35520db4aaddb45d4690ab79353d3368b".toLowerCase(),
+    //fabri  "0xa6d9b3de32c76950d47f9867e2a7089f78c2ce8b".toLowerCase(),
+    // "0x277c0dd35520db4aaddb45d4690ab79353d3368b".toLowerCase(),
     "0x6a03c07f9cb413ce77f398b00c2053bd794eca1a".toLowerCase(),
   ];
 }
