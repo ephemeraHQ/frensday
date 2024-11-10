@@ -62,38 +62,6 @@ export async function addToGroup(
     };
   }
 }
-export async function reAddUsers(
-  addresses: string[],
-  groupId: string
-): Promise<void> {
-  const conversation = await fabriTest.conversations.getConversationById(
-    groupId.toLowerCase()
-  );
-  for (const address of addresses) {
-    console.log("conversation", conversation?.id);
-    if (conversation) {
-      console.log("adding");
-      await conversation?.sync();
-      console.log("synced");
-      await conversation?.removeMembers([address.toLowerCase()]);
-      console.log("removed");
-      await conversation?.sync();
-      console.log("synced");
-      await conversation?.addMembers([address.toLowerCase()]);
-      console.log("added");
-      await conversation?.sync();
-      console.log("synced");
-      const members = await conversation?.members();
-      if (members) {
-        for (const member of members) {
-          if (member.accountAddresses[0] === address) {
-            console.log("added");
-          }
-        }
-      }
-    }
-  }
-}
 export async function sendBroadcast(
   message: string,
   context: HandlerContext,

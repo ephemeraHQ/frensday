@@ -64,15 +64,6 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
-        command: "/remove",
-        adminOnly: true,
-        handler: handleMembers,
-        triggers: ["/remove"],
-        examples: ["/remove"],
-        description: "Remove yourself from the group.",
-        params: {},
-      },
-      {
         command: "/status",
         adminOnly: true,
         triggers: ["/status"],
@@ -197,18 +188,6 @@ export const skills: SkillGroup[] = [
         examples: ["/sendbittu 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
         handler: handlePoap,
         description: "Send Bittu to send a DM.",
-        params: {
-          address: {
-            type: "address",
-          },
-        },
-      },
-      {
-        command: "/removepoap [address]",
-        triggers: ["/removepoap"],
-        examples: ["/removepoap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
-        handler: handlePoap,
-        description: "Remove your POAP.",
         params: {
           address: {
             type: "address",

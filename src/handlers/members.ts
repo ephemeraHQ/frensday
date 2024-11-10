@@ -2,7 +2,7 @@ import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 import { clearChatHistory, getAllowedAddresses } from "../lib/utils.js";
-import { addToGroup, reAddUsers, sendBroadcast } from "../lib/utils.js";
+import { addToGroup, sendBroadcast } from "../lib/utils.js";
 
 import { SkillResponse } from "@xmtp/message-kit";
 
@@ -26,8 +26,6 @@ export async function handleMembers(
   if (command == "reset") {
     const response = await clearChatHistory();
     if (response?.message) context.send(response.message);
-    const response2 = await context.executeSkill("/remove");
-    if (response2?.message) context.send(response2.message);
     const response3 = await context.executeSkill("/unsubscribe");
     if (response3?.message) context.send(response3.message);
     const response4 = await context.executeSkill(
@@ -77,13 +75,6 @@ export async function handleMembers(
       code: 400,
       message: "Error subscribing to updates.",
     };
-  } else if (command == "id") {
-    if (group) {
-      return {
-        code: 200,
-        message: group.id,
-      };
-    }
   } else if (command == "add") {
     const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
@@ -91,37 +82,6 @@ export async function handleMembers(
     if (!subscriberExists) sender.address.toLowerCase();
 
     return await addToGroup(groupId, client, v2client, sender.address);
-  } else if (command == "remove") {
-    const subscriberExists = db?.data?.subscribers?.find(
-      (s) => s.address === sender.address
-    );
-    if (subscriberExists) {
-      const conversation = await client.conversations.getConversationById(
-        groupId
-      );
-
-      //Remove from group
-      const members = await conversation?.members();
-      const member = members?.find((m) =>
-        m.accountAddresses.includes(sender.address)
-      );
-      if (member)
-        await conversation?.removeMembers([member.accountAddresses[0]]);
-
-      db.data.subscribers = db?.data?.subscribers?.filter(
-        (s) => s.address !== sender.address
-      );
-      await db.write();
-
-      return {
-        code: 200,
-        message: "You have been removed to the group",
-      };
-    }
-    return {
-      code: 400,
-      message: "Your removal request has been denied",
-    };
   } else if (command == "exists") {
     const subscribers = db?.data?.subscribers;
     const subscriber = subscribers?.find((s) => s.address === sender.address);
