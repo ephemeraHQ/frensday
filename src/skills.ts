@@ -12,6 +12,7 @@ export const skills: SkillGroup[] = [
       {
         command: "/send [message]",
         triggers: ["/send"],
+        adminOnly: true,
         handler: handleMembers,
         examples: ["/send Hello everyone, the event is starting now!"],
         description: "Send updates to all subscribers.",
@@ -63,14 +64,6 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
-        command: "/members",
-        handler: handleMembers,
-        triggers: ["/members"],
-        examples: ["/members"],
-        description: "Check the number of members in the group.",
-        params: {},
-      },
-      {
         command: "/remove",
         adminOnly: true,
         handler: handleMembers,
@@ -80,11 +73,12 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
-        command: "/id",
+        command: "/status",
         adminOnly: true,
+        triggers: ["/status"],
+        examples: ["/status"],
         handler: handleMembers,
-        triggers: ["/id"],
-        description: "Get the group ID.",
+        description: "Get the status of the bot.",
         params: {},
       },
       {
@@ -94,28 +88,6 @@ export const skills: SkillGroup[] = [
         handler: handleMembers,
         triggers: ["/exists"],
         description: "Check if an address is onboarded.",
-        params: {},
-      },
-      {
-        command: "/readd [address]",
-        adminOnly: true,
-        triggers: ["/readd"],
-        examples: ["/readd 0xa6D9B3DE32C76950D47F9867E2A7089F78c2Ce8B"],
-        handler: handleMembers,
-        description: "Re-add an address to the group.",
-        params: {
-          address: {
-            type: "address",
-          },
-        },
-      },
-      {
-        command: "/status",
-        adminOnly: true,
-        triggers: ["/status"],
-        examples: ["/status"],
-        handler: handleMembers,
-        description: "Get the status of the bot.",
         params: {},
       },
     ],

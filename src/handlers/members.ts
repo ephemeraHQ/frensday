@@ -17,6 +17,7 @@ export async function handleMembers(
     },
     group,
     client,
+    members,
     v2client,
   } = context;
 
@@ -76,12 +77,13 @@ export async function handleMembers(
       code: 400,
       message: "Error subscribing to updates.",
     };
-  } else if (group && command == "id") {
-    console.log(group.id);
-    return {
-      code: 200,
-      message: group.id,
-    };
+  } else if (command == "id") {
+    if (group) {
+      return {
+        code: 200,
+        message: group.id,
+      };
+    }
   } else if (command == "add") {
     const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
@@ -157,35 +159,6 @@ export async function handleMembers(
   } else if (command == "send") {
     const { message } = params;
     return await sendBroadcast(message, context, sender.address);
-  } else if (command == "readd") {
-    const { address } = params;
-    if (!getAllowedAddresses().includes(sender.address.toLowerCase())) {
-      return {
-        code: 400,
-        message: "You are not allowed to send messages",
-      };
-    }
-    //await reAddUsers([address], groupId);
-    context.send("done");
-  } else if (command == "members") {
-    //get v2 conversations
-    console.log("getting v2 conversations");
-    const conversations = await v2client.conversations.list();
-    console.log(conversations.length);
-    for (const conversation of conversations) {
-      console.log(conversation.peerAddress);
-    }
-    console.log("exported conversations", conversations.length);
-    await client.conversations.sync();
-    const conversation = await client.conversations.getConversationById(
-      groupId
-    );
-    const members = await conversation?.members();
-    console.log("exported members", members?.length);
-    for (const member of members ?? []) {
-      console.log(member.accountAddresses[0]);
-    }
-    context.send(`${members?.length} members in the group`);
   } else {
     return {
       code: 400,
