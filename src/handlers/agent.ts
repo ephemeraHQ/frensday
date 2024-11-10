@@ -61,23 +61,23 @@ async function onboard(
   senderAddress: string
 ) {
   try {
-    console.warn("ONBOARD:Onboarding", senderAddress);
+    const groupId = process.env.GROUP_ID;
+    console.warn("ONBOARD Started");
     const addedToGroup = await context.executeSkill("/add");
     // Sleep for 30 seconds
-    console.warn("ONBOARD: Added to group");
+    console.warn("ONBOARD: Added to group", groupId);
     if (addedToGroup?.code == 200) {
       //onboard message
       const subscribed = await context.executeSkill(
         `/subscribe ${senderAddress}`
       );
-      console.warn("ONBOARD: Subscribed to group");
-      const groupId = process.env.GROUP_ID;
-      console.warn("ONBOARD:  Group ID", groupId);
+      console.warn("ONBOARD: Subscribed to updates", senderAddress);
+
       await context.send(
         `Welcome ${name}! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`
       );
-
       await context.executeSkill(`/sendbittu ${senderAddress}`);
+      console.warn("ONBOARD: Bittu message sent");
       setTimeout(() => {
         context.send(
           `psst... by the way, check with Bittu https://converse.xyz/dm/${getBotAddress(
