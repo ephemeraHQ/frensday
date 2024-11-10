@@ -118,6 +118,12 @@ export async function handleMembers(
     };
   } else if (command == "send") {
     const { message } = params;
+    if (message.length < 100) {
+      return {
+        code: 400,
+        message: "Message must be longer than 100 characters",
+      };
+    }
     return await sendBroadcast(message, context, sender.address);
   } else {
     return {
