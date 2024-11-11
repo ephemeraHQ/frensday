@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
-import { clearChatHistory, getAllowedAddresses } from "../lib/utils.js";
+import { clearChatHistory } from "../lib/utils.js";
 import { addToGroup, sendBroadcast } from "../lib/utils.js";
 
 import { SkillResponse } from "@xmtp/message-kit";
@@ -15,11 +15,12 @@ export async function handleMembers(
       content: { command, params },
       sender,
     },
-    group,
     client,
-    members,
+    group,
     v2client,
   } = context;
+
+  let isAdmin = await group.isAdmin(sender.address);
 
   await db.read();
 
@@ -97,7 +98,7 @@ export async function handleMembers(
       };
     }
   } else if (command == "status") {
-    if (!getAllowedAddresses().includes(sender.address.toLowerCase())) {
+    if (!isAdmin) {
       return {
         code: 400,
         message: "You are not allowed to send messages",
@@ -117,14 +118,22 @@ export async function handleMembers(
       message,
     };
   } else if (command == "send") {
+    if (!isAdmin) {
+      return {
+        code: 400,
+        message: "You are not allowed to send messages",
+      };
+    }
     const { message } = params;
-    if (message.length < 100) {
+    console.log("Message", message);
+    /* if (message.length < 100) {
+    console.log("Message is too short", message.length);
       return {
         code: 400,
         message: "Message must be longer than 100 characters",
       };
-    }
-    return await sendBroadcast(message, context, sender.address);
+    }*/
+    return await sendBroadcast(message, context);
   } else {
     return {
       code: 400,

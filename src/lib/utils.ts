@@ -62,18 +62,9 @@ export async function addToGroup(
     };
   }
 }
-export async function sendBroadcast(
-  message: string,
-  context: HandlerContext,
-  sender: string
-) {
-  if (!getAllowedAddresses().includes(sender.toLowerCase())) {
-    return {
-      code: 400,
-      message: "You are not allowed to send messages",
-    };
-  }
+export async function sendBroadcast(message: string, context: HandlerContext) {
   let allSubscribers = await getSubscribers(context);
+  console.log("Sending to", allSubscribers.length, "users");
   if (allSubscribers.length > 0) {
     await context.sendTo(
       message,
@@ -99,34 +90,33 @@ export async function clearChatHistory(address?: string) {
     message: "Chat history cleared",
   };
 }
-export function getAllowedAddresses() {
-  return [
-    //fabri  "0xa6d9b3de32c76950d47f9867e2a7089f78c2ce8b".toLowerCase(),
-    // "0x277c0dd35520db4aaddb45d4690ab79353d3368b".toLowerCase(),
-    "0x6a03c07f9cb413ce77f398b00c2053bd794eca1a".toLowerCase(),
-  ];
-}
+
 export async function getSubscribers(context?: HandlerContext) {
   try {
     await db.read();
     let subscribers = db?.data?.subscribers;
-    const extraSubscribers = fs
-      .readFileSync("src/data/subscribers.txt", "utf8")
-      .split("\n");
-    const extraSubscribersJson = extraSubscribers.map((address) => ({
-      address: address.toLowerCase(),
-      status: "subscribed",
-    }));
-    let allSubscribers = subscribers.concat(extraSubscribersJson);
+
+    let allSubscribers = subscribers;
+
+    if (process.env.NODE_ENV === "production") {
+      const extraSubscribers = fs
+        .readFileSync("src/data/subscribers.txt", "utf8")
+        .split("\n");
+      const extraSubscribersJson = extraSubscribers.map((address) => ({
+        address: address.toLowerCase(),
+        status: "subscribed",
+      }));
+
+      allSubscribers = allSubscribers.concat(extraSubscribersJson);
+    }
     if (process.env.ALL_SUBS == "true") {
       await context?.send(
         `Sending message to ALL ${allSubscribers.length} subscribers...`
       );
     } else {
       await context?.send(
-        `Sending message to ${extraSubscribersJson.length} subscribers for testing, in total there are ${allSubscribers.length} subscribers`
+        `Sending message to ${allSubscribers.length} subscribers for testing, in total there are ${allSubscribers.length} subscribers`
       );
-      allSubscribers = extraSubscribersJson;
     }
     //filter bots
     console.log("Filtering bots", allSubscribers.length);

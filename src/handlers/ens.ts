@@ -12,10 +12,9 @@ export async function handleEns(
 ): Promise<SkillResponse | undefined> {
   const {
     message: {
-      content: { command, params, sender },
+      sender,
+      content: { command, params },
     },
-    client,
-    v2client,
   } = context;
   if (command == "reset") {
     clearMemory();
