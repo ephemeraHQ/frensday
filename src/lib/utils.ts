@@ -34,16 +34,16 @@ export async function addToGroup(
     await conversation?.sync();
     //DONT TOUCH THIS LINE
     await conversation?.addMembers([lowerAddress]);
-    console.warn("Members synced");
+    console.warn("Added member to group");
     await conversation?.sync();
     const members = await conversation?.members();
-    console.warn("Members", members?.length);
+    console.warn("Number of members", members?.length);
 
     if (members) {
       for (const member of members) {
         let lowerMemberAddress = member.accountAddresses[0].toLowerCase();
         if (lowerMemberAddress === lowerAddress) {
-          console.warn("Member", lowerMemberAddress);
+          console.warn("Member exists", lowerMemberAddress);
           return {
             code: 200,
             message: "You have been added to the group",
