@@ -20,7 +20,7 @@ export async function handleMembers(
     v2client,
   } = context;
 
-  let isAdmin = (await group.isAdmin(sender.address)) && group.id === groupId;
+  let isAdmin = (await group?.isAdmin(sender.address)) && group?.id === groupId;
 
   await db.read();
 

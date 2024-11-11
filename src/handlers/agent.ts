@@ -8,16 +8,13 @@ import { system_prompt } from "../prompt.js";
 import { getBotAddress } from "../lib/bots.js";
 
 export async function agentHandler(context: HandlerContext, name: string) {
-  if (!process?.env?.OPEN_AI_API_KEY) {
-    console.log("No OPEN_AI_API_KEY found in .env");
-    return;
-  }
   const {
     message: {
-      content: { content, params },
+      content: { text, params },
       sender,
     },
   } = context;
+
   try {
     const userInfo = await getUserInfo(sender.address);
 
@@ -25,7 +22,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
       console.log("User info not found");
       return;
     }
-    let userPrompt = params?.prompt ?? content;
+    let userPrompt = params?.prompt ?? text;
     let systemPrompt = system_prompt(name, userInfo);
     //Onboarding
     if (name === "earl") {

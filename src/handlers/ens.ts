@@ -16,6 +16,7 @@ export async function handleEns(
       content: { command, params },
     },
   } = context;
+  console.log(command, params);
   if (command == "reset") {
     clearMemory();
     return { code: 200, message: "Conversation reset." };
@@ -87,12 +88,7 @@ export async function handleEns(
     }
     message += `\n\nWould you like to tip the domain owner for getting there first 🤣?`;
     message = message.trim();
-    let { v2, v3 } = await isOnXMTP(
-      context.client,
-      context.v2client,
-      data?.ensInfo?.address
-    );
-    if (v2) {
+    if (await isOnXMTP(context.client, context.v2client, sender?.address)) {
       await context.send(
         `Ah, this domains is in XMTP, you can message it directly: https://converse.xyz/dm/${domain}`
       );

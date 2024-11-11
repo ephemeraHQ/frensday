@@ -13,7 +13,7 @@ export async function handlePoap(
 ): Promise<SkillResponse | undefined> {
   const {
     message: {
-      content: { content: text, command, params },
+      content: { text, command, params },
       sender,
     },
   } = context;

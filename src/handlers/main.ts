@@ -13,7 +13,7 @@ export async function mainHandler(appConfig: BotAddress) {
         message: {
           typeId,
           sender,
-          content: { content: text },
+          content: { text },
         },
         group,
         members,
