@@ -94,21 +94,8 @@ export async function clearChatHistory(address?: string) {
 export async function getSubscribers(context?: HandlerContext) {
   try {
     await db.read();
-    let subscribers = db?.data?.subscribers;
+    let allSubscribers = db?.data?.subscribers;
 
-    let allSubscribers = subscribers;
-
-    if (process.env.NODE_ENV === "production") {
-      const extraSubscribers = fs
-        .readFileSync("src/data/subscribers.txt", "utf8")
-        .split("\n");
-      const extraSubscribersJson = extraSubscribers.map((address) => ({
-        address: address.toLowerCase(),
-        status: "subscribed",
-      }));
-
-      allSubscribers = allSubscribers.concat(extraSubscribersJson);
-    }
     if (process.env.ALL_SUBS == "true") {
       await context?.send(
         `Sending message to ALL ${allSubscribers.length} subscribers...`

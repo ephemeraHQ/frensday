@@ -35,9 +35,10 @@ export async function handlePoap(
         if (address) poapURL += `?address=${address}`;
         await updatePoapDB(newPoap.id, address);
         await clearChatHistory(sender.address);
+        await context.send(`Here is your POAP`);
         return {
           code: 200,
-          message: `Here is your POAP\n${poapURL}`,
+          message: `${poapURL}`,
         };
       } else {
         clearChatHistory(sender.address);
