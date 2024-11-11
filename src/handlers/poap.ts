@@ -50,9 +50,10 @@ export async function handlePoap(
     } else if (poap) {
       let poapURL = `${url}${poap?.id}`;
       if (address) poapURL += `?address=${address}`;
+      await context.send(`Here is the POAP you already claimed`);
       return {
         code: 200,
-        message: `Here is the POAP you already claimed\n${poapURL}`,
+        message: `${poapURL}`,
       };
     }
   } else if (command == "sendbittu") {
