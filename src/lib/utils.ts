@@ -12,6 +12,56 @@ const { client: fabriTest } = await xmtpClient({
   privateKey: process.env.KEY_FABRI_TEST,
 });
 
+export async function removeFromGroup(
+  groupId: string,
+  client: V3Client,
+  v2client: V2Client,
+  senderAddress: string
+): Promise<{ code: number; message: string }> {
+  try {
+    let lowerAddress = senderAddress.toLowerCase();
+    const { v2, v3 } = await isOnXMTP(client, v2client, lowerAddress);
+    console.warn("Checking if on XMTP: v2", v2, "v3", v3);
+    if (!v3)
+      return {
+        code: 400,
+        message: "You dont seem to have a v3 identity ",
+      };
+    const conversation = await client.conversations.getConversationById(
+      groupId
+    );
+    console.warn("Adding to group", conversation?.id);
+    await conversation?.sync();
+    //DONT TOUCH THIS LINE
+    await conversation?.removeMembers([lowerAddress]);
+    console.warn("Removed member from group");
+    await conversation?.sync();
+    const members = await conversation?.members();
+    console.warn("Number of members", members?.length);
+
+    let wasRemoved = true;
+    if (members) {
+      for (const member of members) {
+        let lowerMemberAddress = member.accountAddresses[0].toLowerCase();
+        if (lowerMemberAddress !== lowerAddress) {
+          console.warn("Member exists", lowerMemberAddress);
+          wasRemoved = false;
+        }
+      }
+    }
+    return {
+      code: wasRemoved ? 200 : 400,
+      message: wasRemoved
+        ? "You have been removed from the group"
+        : "Failed to remove from group",
+    };
+  } catch (error) {
+    return {
+      code: 400,
+      message: "Failed to remove from group",
+    };
+  }
+}
 export async function addToGroup(
   groupId: string,
   client: V3Client,

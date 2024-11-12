@@ -35,6 +35,14 @@ export const skills: SkillGroup[] = [
         },
       },
       {
+        command: "/remove",
+        triggers: ["/remove"],
+        examples: ["/remove"],
+        handler: handleMembers,
+        description: "Remove yourself from the group.",
+        params: {},
+      },
+      {
         command: "/reset",
         triggers: ["/reset"],
         examples: ["/reset"],

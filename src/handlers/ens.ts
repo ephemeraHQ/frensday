@@ -16,7 +16,6 @@ export async function handleEns(
       content: { command, params },
     },
   } = context;
-  console.log(command, params);
   if (command == "reset") {
     clearMemory();
     return { code: 200, message: "Conversation reset." };

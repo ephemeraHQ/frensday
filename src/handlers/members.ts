@@ -2,7 +2,7 @@ import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
 import { clearChatHistory } from "../lib/utils.js";
-import { addToGroup, sendBroadcast } from "../lib/utils.js";
+import { addToGroup, sendBroadcast, removeFromGroup } from "../lib/utils.js";
 
 import { SkillResponse } from "@xmtp/message-kit";
 
@@ -34,10 +34,7 @@ export async function handleMembers(
     );
     if (response4?.message) context.send(response4.message);
 
-    return {
-      code: 200,
-      message: "Chat history and group removed",
-    };
+    return await addToGroup(groupId, client, v2client, sender.address);
   } else if (command == "unsubscribe") {
     const subscribers = db?.data?.subscribers;
     const subscriber = subscribers?.find((s) => s.address === sender.address);
@@ -83,6 +80,8 @@ export async function handleMembers(
     if (!subscriberExists) sender.address.toLowerCase();
 
     return await addToGroup(groupId, client, v2client, sender.address);
+  } else if (command == "remove") {
+    return await removeFromGroup(groupId, client, v2client, sender.address);
   } else if (command == "exists") {
     const subscribers = db?.data?.subscribers;
     const subscriber = subscribers?.find((s) => s.address === sender.address);
