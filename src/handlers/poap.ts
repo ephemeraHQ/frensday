@@ -28,14 +28,16 @@ export async function handlePoap(
     if (!poap) {
       // Find a new POAP with an empty address
       const newPoap = await getRecordByField("poaps", "address", "");
-      console.log("newPoap", newPoap);
 
       if (newPoap?.id && address) {
         let poapURL = `${url}${newPoap?.id}`;
         if (address) poapURL += `?address=${address}`;
-        await updateRecordById("poaps", newPoap.id, { address });
         await clearChatHistory(sender.address);
         await context.send(`Here is your POAP`);
+        await context.send(newPoap.id);
+        await updateRecordById("poaps", newPoap.id, { address });
+        const poap = await getRecordByField("poaps", "address", address);
+        context.send(`POAP updated to ${poap?.id} - ${address}`);
         return {
           code: 200,
           message: `${poapURL}`,
