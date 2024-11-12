@@ -54,6 +54,7 @@ export async function handlePoap(
       let poapURL = `${url}${poap?.id}`;
       if (address) poapURL += `?address=${address}`;
       await context.send(`Here is the POAP you already claimed`);
+      context.send(`POAP delivered to ${poap?.id} - ${address}`);
       return {
         code: 200,
         message: `${poapURL}`,
