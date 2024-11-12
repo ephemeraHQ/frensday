@@ -13,13 +13,13 @@ export async function handleEns(
   const {
     message: {
       sender,
-      content: { command, params },
+      content: { skill, params },
     },
   } = context;
-  if (command == "reset") {
+  if (skill == "reset") {
     clearMemory();
     return { code: 200, message: "Conversation reset." };
-  } else if (command == "renew") {
+  } else if (skill == "renew") {
     // Destructure and validate parameters for the ens command
     const { domain } = params;
     // Check if the user holds the domain
@@ -43,7 +43,7 @@ export async function handleEns(
     // Generate URL for the ens
     let url_ens = frameUrl + "frames/manage?name=" + domain;
     return { code: 200, message: `${url_ens}` };
-  } else if (command == "register") {
+  } else if (skill == "register") {
     // Destructure and validate parameters for the ens command
     const { domain } = params;
 
@@ -56,7 +56,7 @@ export async function handleEns(
     // Generate URL for the ens
     let url_ens = ensUrl + domain;
     return { code: 200, message: `${url_ens}` };
-  } else if (command == "info") {
+  } else if (skill == "info") {
     const { domain } = params;
 
     const data = await getUserInfo(domain);
@@ -93,7 +93,7 @@ export async function handleEns(
       );
     }
     return { code: 200, message };
-  } else if (command == "check") {
+  } else if (skill == "check") {
     const { domain } = params;
 
     if (!domain) {
@@ -118,7 +118,7 @@ export async function handleEns(
         message,
       };
     }
-  } else if (command == "tip") {
+  } else if (skill == "tip") {
     const { address } = params;
     if (!address) {
       return {
@@ -137,7 +137,7 @@ export async function handleEns(
       code: 200,
       message: txUrl,
     };
-  } else if (command == "cool") {
+  } else if (skill == "cool") {
     const { domain } = params;
     //What about these cool alternatives?\
     return {

@@ -12,7 +12,7 @@ export async function handleMembers(
 ): Promise<SkillResponse | undefined> {
   const {
     message: {
-      content: { command, params },
+      content: { skill, params },
       sender,
     },
     client,
@@ -24,7 +24,7 @@ export async function handleMembers(
 
   await db.read();
 
-  if (command == "reset") {
+  if (skill == "reset") {
     const response = await clearChatHistory();
     if (response?.message) context.send(response.message);
     const response3 = await context.executeSkill("/unsubscribe");
@@ -40,7 +40,7 @@ export async function handleMembers(
       sender.address
     );
     if (response6?.message) context.send(response6.message);
-  } else if (command == "unsubscribe") {
+  } else if (skill == "unsubscribe") {
     const subscribers = db?.data?.subscribers;
     const subscriber = subscribers?.find((s) => s.address === sender.address);
     if (subscriber) {
@@ -51,7 +51,7 @@ export async function handleMembers(
       code: 200,
       message: "You have been unsubscribed from updates.",
     };
-  } else if (command == "subscribe") {
+  } else if (skill == "subscribe") {
     const subscribers = db?.data?.subscribers;
     if (!subscribers) {
       db.data.subscribers = [];
@@ -78,14 +78,14 @@ export async function handleMembers(
       code: 400,
       message: "Error subscribing to updates.",
     };
-  } else if (command == "add") {
+  } else if (skill == "add") {
     const subscriberExists = db?.data?.subscribers?.find(
       (s) => s.address === sender.address
     );
     if (!subscriberExists) sender.address.toLowerCase();
 
     return await addToGroup(groupId, client, v2client, sender.address);
-  } else if (command == "exists") {
+  } else if (skill == "exists") {
     const subscribers = db?.data?.subscribers;
     const subscriber = subscribers?.find((s) => s.address === sender.address);
     if (subscriber) {
@@ -99,7 +99,7 @@ export async function handleMembers(
         message: "Address was not onboarded",
       };
     }
-  } else if (command == "status") {
+  } else if (skill == "status") {
     if (!isAdmin) {
       return {
         code: 400,
@@ -119,7 +119,7 @@ export async function handleMembers(
       code: 200,
       message,
     };
-  } else if (command == "send") {
+  } else if (skill == "send") {
     if (!isAdmin) {
       return {
         code: 400,

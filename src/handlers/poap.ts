@@ -13,14 +13,14 @@ export async function handlePoap(
 ): Promise<SkillResponse | undefined> {
   const {
     message: {
-      content: { text, command, params },
+      content: { text, skill, params },
       sender,
     },
   } = context;
 
   const url = `https://converse.xyz/poap/`; // we use this to render the frame
 
-  if (command == "poap") {
+  if (skill == "poap") {
     // Destructure and validate parameters for the ens command
     const { address } = params;
     // Find a POAP with the given address
@@ -56,7 +56,7 @@ export async function handlePoap(
         message: `${poapURL}`,
       };
     }
-  } else if (command == "sendbittu") {
+  } else if (skill == "sendbittu") {
     const conversations = await bittu.conversations.list();
 
     let targetConversation = conversations.find(
@@ -76,7 +76,7 @@ export async function handlePoap(
       code: 200,
       message: "Bittu sent",
     };
-  } else if (command == "removepoap") {
+  } else if (skill == "removepoap") {
     const { address } = params;
     const poap = await getPoapByAddress(address);
     if (poap) {

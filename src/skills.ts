@@ -10,7 +10,7 @@ export const skills: SkillGroup[] = [
     description: "Earl manages all for the event",
     skills: [
       {
-        command: "/send [message]",
+        skill: "/send [message]",
         triggers: ["/send"],
         adminOnly: true,
         handler: handleMembers,
@@ -23,7 +23,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/subscribe",
+        skill: "/subscribe",
         triggers: ["/subscribe"],
         handler: handleMembers,
         examples: ["/subscribe"],
@@ -35,7 +35,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/remove",
+        skill: "/remove",
         triggers: ["/remove"],
         examples: ["/remove"],
         handler: handleMembers,
@@ -43,7 +43,7 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
-        command: "/reset",
+        skill: "/reset",
         triggers: ["/reset"],
         examples: ["/reset"],
         handler: handleMembers,
@@ -51,7 +51,7 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
-        command: "/unsubscribe",
+        skill: "/unsubscribe",
         triggers: ["/unsubscribe"],
         examples: ["/unsubscribe"],
         handler: handleMembers,
@@ -63,7 +63,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/add",
+        skill: "/add",
         adminOnly: true,
         handler: handleMembers,
         triggers: ["/add"],
@@ -72,7 +72,7 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
-        command: "/status",
+        skill: "/status",
         adminOnly: true,
         triggers: ["/status"],
         examples: ["/status"],
@@ -81,7 +81,7 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
-        command: "/exists",
+        skill: "/exists",
         adminOnly: true,
         examples: ["/exists"],
         handler: handleMembers,
@@ -97,7 +97,7 @@ export const skills: SkillGroup[] = [
     description: "Register ENS domains.",
     skills: [
       {
-        command: "/register [domain]",
+        skill: "/register [domain]",
         triggers: ["/register"],
         handler: handleEns,
         description:
@@ -110,7 +110,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/info [domain]",
+        skill: "/info [domain]",
         triggers: ["/info"],
         handler: handleEns,
         description:
@@ -123,7 +123,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/renew [domain]",
+        skill: "/renew [domain]",
         triggers: ["/renew"],
         handler: handleEns,
         description:
@@ -136,7 +136,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/check [domain]",
+        skill: "/check [domain]",
         triggers: ["/check"],
         handler: handleEns,
         examples: ["/check vitalik.eth", "/check fabri.base.eth"],
@@ -148,7 +148,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/cool [domain]",
+        skill: "/cool [domain]",
         triggers: ["/cool"],
         examples: ["/cool vitalik.eth"],
         handler: handleEns,
@@ -160,7 +160,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/tip [address]",
+        skill: "/tip [address]",
         description: "Show a URL for tipping a domain owner.",
         triggers: ["/tip"],
         handler: handleEns,
@@ -179,7 +179,7 @@ export const skills: SkillGroup[] = [
     description: "Bittu is the mascot of the event, delivers your poap",
     skills: [
       {
-        command: "/poap [address]",
+        skill: "/poap [address]",
         triggers: ["/poap"],
         examples: ["/poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
         handler: handlePoap,
@@ -191,7 +191,7 @@ export const skills: SkillGroup[] = [
         },
       },
       {
-        command: "/sendbittu [address]",
+        skill: "/sendbittu [address]",
         triggers: ["/sendbittu"],
         examples: ["/sendbittu 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
         handler: handlePoap,

@@ -25,7 +25,7 @@ export async function removeFromGroup(
     const conversation = await client.conversations.getConversationById(
       groupId
     );
-    console.warn("Adding to group", conversation?.id);
+    console.warn("Removing from group", conversation?.id);
     await conversation?.sync();
     //DONT TOUCH THIS LINE
     await conversation?.removeMembers([lowerAddress]);
