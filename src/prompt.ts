@@ -1,5 +1,9 @@
 import { UserInfo, PROMPT_USER_CONTENT } from "@xmtp/message-kit";
-import { PROMPT_RULES, PROMPT_SKILLS_AND_EXAMPLES } from "@xmtp/message-kit";
+import {
+  PROMPT_RULES,
+  PROMPT_SKILLS_AND_EXAMPLES,
+  PROMPT_REPLACE_VARIABLES,
+} from "@xmtp/message-kit";
 import {
   replaceDeeplinks,
   getPersonality,
@@ -11,8 +15,11 @@ import { skills } from "./skills.js";
 
 export const system_prompt = (name: string, userInfo: UserInfo) => {
   /* Set up the rules, intro and characters */
-  let systemPrompt = PROMPT_RULES;
-  systemPrompt = systemPrompt.replace("{NAME}", name);
+  let systemPrompt =
+    PROMPT_RULES +
+    PROMPT_USER_CONTENT(userInfo) +
+    PROMPT_SKILLS_AND_EXAMPLES(skills, `@${name}`);
+
   systemPrompt += `
 ### Frensday Event details
 
@@ -38,12 +45,19 @@ Each character has its own task. This are the characters:
   /*Each agent has specific information*/
   systemPrompt += specificInfo(name);
 
-  /* Add current time in Bangkok */
-  systemPrompt = systemPrompt.replace("{TIME}", getTimeZone());
-
   //Return with dev addresses for testing
   if (!isDeployed) systemPrompt = replaceDeeplinks(systemPrompt);
   // console.log(systemPrompt);
+
+  systemPrompt = PROMPT_REPLACE_VARIABLES(
+    systemPrompt,
+    userInfo?.address ?? "",
+    userInfo,
+    "@ens"
+  );
+
+  systemPrompt = systemPrompt.replace("{TIME}", getTimeZone());
+
   return systemPrompt;
 };
 
@@ -54,13 +68,11 @@ export const BITTU = `
 - Don't forget to use commands to deliver POAPs.
 - Poaps are unique URLs basically
 
-${PROMPT_SKILLS_AND_EXAMPLES(skills, "bittu")}
-
 ## Example responses
 1. Greeting
 User: Yes!
 Bittu: Ah, I sense your excitement rippling through the conversation! Let's make this moment extra special with a unique POAP for you. Here we go:
-/poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c
+/poap 0xa6D9B3DE32C76950D4...
 2. Other
 User: What is POAP?
 Bittu: POAP is a unique URL that you can share with your friends to let them know you are attending the Frensday event.
@@ -70,16 +82,15 @@ Bittu: Only one per user is allowed!
 3. User asks for the same POAP
 User: Can you give me the same POAP again?
 Bittu: Only one per user is allowed! But here is the same POAP:
-/poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c
+/poap 0xa6D9B3DE32C76950D4...
 4. Users directly asks for POAP
 Bittu: Here you go!
-Bittu: /poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c
+Bittu: /poap 0xa6D9B3DE32C76950D4...
 `;
 
 export const EARL = `
 - Your task is to provide information about speakers and the event in general and manage subscriptions
 - If the adding fails to the group, you can provide the invite link https://converse.xyz/group-invite/Dv61bhPMFVW0Eb8oSngg6
-${PROMPT_SKILLS_AND_EXAMPLES(skills, "earl")}
 
 
 `;
@@ -90,8 +101,6 @@ export const LILI = `
 - Don't propose if you are not sure
 - Don't reply with more than 5 events at once.
 
-${PROMPT_SKILLS_AND_EXAMPLES(skills, "lili")}
-
 `;
 
 export const PEANUT = `
@@ -100,14 +109,11 @@ export const PEANUT = `
 - When you offer WORDLE help dont show the frame URL. SHow the frame url only the first time they play.
 - Information about Frames: You are sharing Frames which are mini web apps embeded inside messaging. Is meant to be played inside the chat not a clickable link.
 
-${PROMPT_SKILLS_AND_EXAMPLES(skills, "peanut")}
 
 `;
 
 export const KUZCO = `
 - Your task is to help with ENS domains 
-
-${PROMPT_SKILLS_AND_EXAMPLES(skills, "kuzco")}
 
 ## Example responses
 
@@ -144,6 +150,7 @@ ${PROMPT_SKILLS_AND_EXAMPLES(skills, "kuzco")}
   But you forgot to add the command at the end of the message.
   You should have said something like: "Looks like vitalik.eth is registered! What about these cool alternatives?\n/cool vitalik.eth
   `;
+
 export const getTasks = (name: string) => {
   let task = `\n\n# Task\n\n You are ${name}. `;
   if (name == "bittu") task += BITTU;

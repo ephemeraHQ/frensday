@@ -172,7 +172,7 @@ export const skills: SkillGroup[] = [
       {
         skill: "/poap [address]",
         triggers: ["/poap"],
-        examples: ["/poap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
+        examples: ["/poap 0xa6D9B3DE32C76950D4..."],
         handler: handlePoap,
         description: "Get your POAP.",
         params: {

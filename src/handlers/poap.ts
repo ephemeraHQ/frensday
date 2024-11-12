@@ -23,6 +23,7 @@ export async function handlePoap(
   if (skill == "poap") {
     // Destructure and validate parameters for the ens command
     const { address } = params;
+    console.log("address", address);
     // Find a POAP with the given address
     const poap = await getRecordByField("poaps", "address", address);
     if (!poap) {
