@@ -191,6 +191,18 @@ export const skills: SkillGroup[] = [
         },
       },
       {
+        skill: "/removepoap [address]",
+        triggers: ["/removepoap"],
+        examples: ["/removepoap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
+        handler: handlePoap,
+        description: "Remove your POAP.",
+        params: {
+          address: {
+            type: "address",
+          },
+        },
+      },
+      {
         skill: "/sendbittu [address]",
         triggers: ["/sendbittu"],
         examples: ["/sendbittu 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],

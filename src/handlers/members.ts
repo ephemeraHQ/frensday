@@ -25,7 +25,7 @@ export async function handleMembers(
   await db.read();
 
   if (skill == "reset") {
-    const response = await clearChatHistory();
+    const response = await clearChatHistory(sender.address);
     if (response?.message) context.send(response.message);
     const response3 = await context.executeSkill("/unsubscribe");
     if (response3?.message) context.send(response3.message);
