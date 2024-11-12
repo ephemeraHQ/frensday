@@ -6,11 +6,6 @@ import { clearMemory } from "@xmtp/message-kit";
 import { clearInfoCache, isOnXMTP } from "@xmtp/message-kit";
 import { isAnyBot } from "./bots.js";
 import { db } from "./db.js";
-import fs from "fs";
-
-const { client: fabriTest } = await xmtpClient({
-  privateKey: process.env.KEY_FABRI_TEST,
-});
 
 export async function removeFromGroup(
   groupId: string,
