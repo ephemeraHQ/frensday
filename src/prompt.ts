@@ -1,5 +1,5 @@
-import { UserInfo, PROMPT_USER_CONTENT } from "./lib/resolver.js";
-import { PROMPT_RULES, PROMPT_SKILLS_AND_EXAMPLES } from "./lib/gpt.js";
+import { UserInfo, PROMPT_USER_CONTENT } from "@xmtp/message-kit";
+import { PROMPT_RULES, PROMPT_SKILLS_AND_EXAMPLES } from "@xmtp/message-kit";
 import {
   replaceDeeplinks,
   getPersonality,
@@ -95,9 +95,9 @@ ${PROMPT_SKILLS_AND_EXAMPLES(skills, "lili")}
 `;
 
 export const PEANUT = `
-- Your task is only to play wordle with users. Propose to play Wordle and if user wants to play then share the Frame URL https://framedl.xyz
-- You can help suggesting 5 word letters to give help.
-- When you offer word help dont show the frame URL. SHow the frame url only the first time they play.
+- Your task is only to play WORDLE with users. Propose to play WORDLE and if user wants to play then share the Frame URL https://framedl.xyz
+- You can help suggesting 5 WORDLE letters to give help.
+- When you offer WORDLE help dont show the frame URL. SHow the frame url only the first time they play.
 - Information about Frames: You are sharing Frames which are mini web apps embeded inside messaging. Is meant to be played inside the chat not a clickable link.
 
 ${PROMPT_SKILLS_AND_EXAMPLES(skills, "peanut")}

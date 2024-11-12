@@ -1,7 +1,7 @@
 import { HandlerContext, SkillResponse } from "@xmtp/message-kit";
-import { getUserInfo, clearInfoCache, isOnXMTP } from "../lib/resolver.js";
+import { getUserInfo, clearInfoCache, isOnXMTP } from "@xmtp/message-kit";
 import { isAddress } from "viem";
-import { clearMemory } from "../lib/gpt.js";
+import { clearMemory } from "@xmtp/message-kit";
 
 export const frameUrl = "https://ens.steer.fun/";
 export const ensUrl = "https://app.ens.domains/";
@@ -12,11 +12,11 @@ export async function handleEns(
 ): Promise<SkillResponse | undefined> {
   const {
     message: {
-      content: { command, params, sender },
+      sender,
+      content: { command, params },
     },
-    client,
-    v2client,
   } = context;
+  console.log(command, params);
   if (command == "reset") {
     clearMemory();
     return { code: 200, message: "Conversation reset." };
@@ -88,12 +88,7 @@ export async function handleEns(
     }
     message += `\n\nWould you like to tip the domain owner for getting there first 🤣?`;
     message = message.trim();
-    let { v2, v3 } = await isOnXMTP(
-      context.client,
-      context.v2client,
-      data?.ensInfo?.address
-    );
-    if (v2) {
+    if (await isOnXMTP(context.client, context.v2client, sender?.address)) {
       await context.send(
         `Ah, this domains is in XMTP, you can message it directly: https://converse.xyz/dm/${domain}`
       );

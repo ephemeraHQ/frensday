@@ -12,6 +12,7 @@ export const skills: SkillGroup[] = [
       {
         command: "/send [message]",
         triggers: ["/send"],
+        adminOnly: true,
         handler: handleMembers,
         examples: ["/send Hello everyone, the event is starting now!"],
         description: "Send updates to all subscribers.",
@@ -63,20 +64,12 @@ export const skills: SkillGroup[] = [
         params: {},
       },
       {
-        command: "/remove",
+        command: "/status",
         adminOnly: true,
+        triggers: ["/status"],
+        examples: ["/status"],
         handler: handleMembers,
-        triggers: ["/remove"],
-        examples: ["/remove"],
-        description: "Remove yourself from the group.",
-        params: {},
-      },
-      {
-        command: "/id",
-        adminOnly: true,
-        handler: handleMembers,
-        triggers: ["/id"],
-        description: "Get the group ID.",
+        description: "Get the status of the bot.",
         params: {},
       },
       {
@@ -86,15 +79,6 @@ export const skills: SkillGroup[] = [
         handler: handleMembers,
         triggers: ["/exists"],
         description: "Check if an address is onboarded.",
-        params: {},
-      },
-      {
-        command: "/status",
-        adminOnly: true,
-        triggers: ["/status"],
-        examples: ["/status"],
-        handler: handleMembers,
-        description: "Get the status of the bot.",
         params: {},
       },
     ],
@@ -204,18 +188,6 @@ export const skills: SkillGroup[] = [
         examples: ["/sendbittu 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
         handler: handlePoap,
         description: "Send Bittu to send a DM.",
-        params: {
-          address: {
-            type: "address",
-          },
-        },
-      },
-      {
-        command: "/removepoap [address]",
-        triggers: ["/removepoap"],
-        examples: ["/removepoap 0xe9791cb9Db1eF92Ed0670B31ab9a9453AA7BFb4c"],
-        handler: handlePoap,
-        description: "Remove your POAP.",
         params: {
           address: {
             type: "address",

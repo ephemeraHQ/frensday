@@ -1,6 +1,6 @@
 import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
 import { db } from "../lib/db.js";
-import { clearChatHistory } from "./members.js";
+import { clearChatHistory } from "../lib/utils.js";
 import { SkillResponse } from "@xmtp/message-kit";
 
 const { v2client: bittu } = await xmtpClient({
@@ -13,7 +13,7 @@ export async function handlePoap(
 ): Promise<SkillResponse | undefined> {
   const {
     message: {
-      content: { content: text, command, params },
+      content: { text, command, params },
       sender,
     },
   } = context;
@@ -35,9 +35,10 @@ export async function handlePoap(
         if (address) poapURL += `?address=${address}`;
         await updatePoapDB(newPoap.id, address);
         await clearChatHistory(sender.address);
+        await context.send(`Here is your POAP`);
         return {
           code: 200,
-          message: `Here is your POAP\n${poapURL}`,
+          message: `${poapURL}`,
         };
       } else {
         clearChatHistory(sender.address);
@@ -49,9 +50,10 @@ export async function handlePoap(
     } else if (poap) {
       let poapURL = `${url}${poap?.id}`;
       if (address) poapURL += `?address=${address}`;
+      await context.send(`Here is the POAP you already claimed`);
       return {
         code: 200,
-        message: `Here is the POAP you already claimed\n${poapURL}`,
+        message: `${poapURL}`,
       };
     }
   } else if (command == "sendbittu") {
