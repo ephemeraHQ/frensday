@@ -1,7 +1,7 @@
 import { HandlerContext, xmtpClient } from "@xmtp/message-kit";
-import { db } from "../lib/db.js";
 import { clearChatHistory } from "../lib/utils.js";
 import { SkillResponse } from "@xmtp/message-kit";
+import { getRecordByField, updateRecordById } from "../lib/lowdb.js";
 
 const { v2client: bittu } = await xmtpClient({
   privateKey: process.env.KEY_BITTU,
@@ -24,16 +24,16 @@ export async function handlePoap(
     // Destructure and validate parameters for the ens command
     const { address } = params;
     // Find a POAP with the given address
-    const poap = await getPoapByAddress(address);
+    const poap = await getRecordByField("poaps", "address", address);
     if (!poap) {
       // Find a new POAP with an empty address
-      const newPoap = await getPoapByAddress("");
+      const newPoap = await getRecordByField("poaps", "address", "");
       console.log("newPoap", newPoap);
 
       if (newPoap?.id && address) {
         let poapURL = `${url}${newPoap?.id}`;
         if (address) poapURL += `?address=${address}`;
-        await updatePoapDB(newPoap.id, address);
+        await updateRecordById("poaps", newPoap.id, { address });
         await clearChatHistory(sender.address);
         await context.send(`Here is your POAP`);
         return {
@@ -78,9 +78,9 @@ export async function handlePoap(
     };
   } else if (skill == "removepoap") {
     const { address } = params;
-    const poap = await getPoapByAddress(address);
+    const poap = await getRecordByField("poaps", "address", address);
     if (poap) {
-      updatePoapDB(poap.id, "");
+      await updateRecordById("poaps", poap.id, { address: "" });
     } else {
       return {
         code: 400,
@@ -92,23 +92,6 @@ export async function handlePoap(
       message: `Your poap ${poap?.id} has been removed`,
     };
   }
-}
-
-async function updatePoapDB(id: string, address: string) {
-  const poap = await getPoapById(id);
-  if (poap) poap.address = address;
-  await db.write();
-  return true;
-}
-async function getPoapByAddress(address: string) {
-  await db.read();
-  const poap = db?.data?.poaps?.find((poap) => poap.address === address);
-  return poap;
-}
-async function getPoapById(id: string) {
-  await db.read();
-  const poap = db?.data?.poaps?.find((poap) => poap.id === id);
-  return poap;
 }
 
 /*

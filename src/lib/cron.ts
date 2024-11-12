@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { V2Client } from "@xmtp/message-kit";
-import { db } from "./db.js";
+import { getRecords } from "./lowdb.js";
 import { fetchSpeakers } from "./eventapi.js";
 import fs from "fs/promises";
 import { textGeneration } from "@xmtp/message-kit";
@@ -32,8 +32,7 @@ export const fetchSpeakersCron = async () => {
     console.log("Fetching and saving speakers");
     await saveSpeakersToFile();
   });
-  await db.read();
-  const subscribers = db?.data?.subscribers;
+  const subscribers = await getRecords("subscribers");
   console.log(
     `   - Cron job started to fetch speakers every 10 minutes\n   - Earl will send updates to ${subscribers?.length} subscribers every 2 days`
   );
@@ -46,8 +45,7 @@ export async function sendUpdates(v2client: V2Client) {
   cron.schedule(
     "0 0 */2 * *", // Every 2 days at midnight UTC
     async () => {
-      await db.read();
-      const subscribers = db?.data?.subscribers;
+      const subscribers = await getRecords("subscribers");
 
       console.log(`Running task. ${subscribers?.length} subscribers.`);
       for (const subscriber of subscribers) {

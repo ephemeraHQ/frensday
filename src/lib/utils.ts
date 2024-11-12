@@ -1,11 +1,11 @@
 import "dotenv/config";
-import { xmtpClient } from "@xmtp/message-kit";
 import { V3Client, V2Client } from "@xmtp/message-kit";
 import { HandlerContext } from "@xmtp/message-kit";
 import { clearMemory } from "@xmtp/message-kit";
 import { clearInfoCache, isOnXMTP } from "@xmtp/message-kit";
 import { isAnyBot } from "./bots.js";
-import { db } from "./db.js";
+import { getRecords } from "./lowdb.js";
+import { getBotAddress } from "./bots.js";
 
 export async function removeFromGroup(
   groupId: string,
@@ -25,9 +25,8 @@ export async function removeFromGroup(
     const conversation = await client.conversations.getConversationById(
       groupId
     );
-    console.warn("Removing from group", conversation?.id);
+    console.warn("removing from group", conversation?.id);
     await conversation?.sync();
-    //DONT TOUCH THIS LINE
     await conversation?.removeMembers([lowerAddress]);
     console.warn("Removed member from group");
     await conversation?.sync();
@@ -39,7 +38,6 @@ export async function removeFromGroup(
       for (const member of members) {
         let lowerMemberAddress = member.accountAddresses[0].toLowerCase();
         if (lowerMemberAddress !== lowerAddress) {
-          console.warn("Member exists", lowerMemberAddress);
           wasRemoved = false;
         }
       }
@@ -51,6 +49,7 @@ export async function removeFromGroup(
         : "Failed to remove from group",
     };
   } catch (error) {
+    console.log("Error removing from group", error);
     return {
       code: 400,
       message: "Failed to remove from group",
@@ -138,8 +137,7 @@ export async function clearChatHistory(address?: string) {
 
 export async function getSubscribers(context?: HandlerContext) {
   try {
-    await db.read();
-    let allSubscribers = db?.data?.subscribers;
+    let allSubscribers = await getRecords("subscribers");
 
     if (process.env.ALL_SUBS == "true") {
       await context?.send(
@@ -170,5 +168,50 @@ export async function getSubscribers(context?: HandlerContext) {
   } catch (error) {
     console.log(error);
     return [];
+  }
+}
+
+export async function onboard(
+  context: HandlerContext,
+  name: string,
+  senderAddress: string
+) {
+  try {
+    context?.send(
+      "Hey there! Give me a sec while I fetch info about you first..."
+    );
+    const groupId = process.env.GROUP_ID;
+    console.warn("ONBOARD Started");
+    const addedToGroup = await context.executeSkill("/add");
+    // Sleep for 30 seconds
+    console.warn("ONBOARD: Added to group", groupId);
+    if (addedToGroup?.code == 200) {
+      //onboard message
+      const subscribed = await context.executeSkill(
+        `/subscribe ${senderAddress}`
+      );
+      //if (subscribed?.message) context.send(subscribed.message);
+      console.warn("ONBOARD: Subscribed to updates", senderAddress);
+      await context.send(
+        `Welcome ${name}! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`
+      );
+      await context.executeSkill(`/sendbittu ${senderAddress}`);
+      console.warn("ONBOARD: Bittu message sent");
+      setTimeout(() => {
+        context.send(
+          `psst... by the way, check with Bittu https://converse.xyz/dm/${getBotAddress(
+            "bittu"
+          )} for a exclusive POAP 😉`
+        );
+      }, 30000); // 30000 milliseconds = 30 seconds
+      return true;
+    } else {
+      console.warn(addedToGroup?.message ?? "Failed to add to group");
+      context.send(addedToGroup?.message ?? "Failed to add to group");
+      return false;
+    }
+  } catch (error) {
+    console.log("Error adding to group", error);
+    return false;
   }
 }

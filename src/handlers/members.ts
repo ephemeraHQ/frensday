@@ -1,8 +1,12 @@
 import "dotenv/config";
 import { HandlerContext } from "@xmtp/message-kit";
-import { db } from "../lib/db.js";
 import { clearChatHistory } from "../lib/utils.js";
-import { addToGroup, sendBroadcast, removeFromGroup } from "../lib/utils.js";
+import { addToGroup, removeFromGroup, sendBroadcast } from "../lib/utils.js";
+import {
+  updateRecordById,
+  getRecordByField,
+  getRecords,
+} from "../lib/lowdb.js";
 
 import { SkillResponse } from "@xmtp/message-kit";
 
@@ -22,11 +26,7 @@ export async function handleMembers(
 
   let isAdmin = (await group?.isAdmin(sender.address)) && group?.id === groupId;
 
-  await db.read();
-
   if (skill == "reset") {
-    const response = await clearChatHistory(sender.address);
-    if (response?.message) context.send(response.message);
     const response3 = await context.executeSkill("/unsubscribe");
     if (response3?.message) context.send(response3.message);
     const response4 = await context.executeSkill(
@@ -40,55 +40,61 @@ export async function handleMembers(
       sender.address
     );
     if (response6?.message) context.send(response6.message);
+    const response = await clearChatHistory(sender.address);
+    if (response?.message) context.send(response.message);
   } else if (skill == "unsubscribe") {
-    const subscribers = db?.data?.subscribers;
-    const subscriber = subscribers?.find((s) => s.address === sender.address);
+    const subscriber = await getRecordByField(
+      "subscribers",
+      "address",
+      sender.address
+    );
     if (subscriber) {
-      subscriber.status = "unsubscribed";
+      await updateRecordById("subscribers", subscriber.id, {
+        status: "unsubscribed",
+      });
     }
-    await db.write();
     return {
       code: 200,
       message: "You have been unsubscribed from updates.",
     };
   } else if (skill == "subscribe") {
-    const subscribers = db?.data?.subscribers;
-    if (!subscribers) {
-      db.data.subscribers = [];
-    }
-    const subscriber = subscribers?.find((s) => s.address === sender.address);
-    if (!subscriber) {
-      db?.data?.subscribers?.push({
-        address: sender.address,
+    const subscriber = await getRecordByField(
+      "subscribers",
+      "address",
+      sender.address
+    );
+    if (subscriber) {
+      await updateRecordById("subscribers", subscriber?.id, {
         status: "subscribed",
       });
-      await db.write();
 
       return {
         code: 200,
-        message: "📣 You have been subscribed to updates.",
+        message: "You have been subscribed to updates.",
       };
-    } else if (subscriber.status === "subscribed") {
+    } else {
       return {
         code: 400,
         message: "You are already subscribed to updates.",
       };
     }
-    return {
-      code: 400,
-      message: "Error subscribing to updates.",
-    };
   } else if (skill == "add") {
-    const subscriberExists = db?.data?.subscribers?.find(
-      (s) => s.address === sender.address
+    const subscriberExists = await getRecordByField(
+      "subscribers",
+      "address",
+      sender.address
     );
     if (!subscriberExists) sender.address.toLowerCase();
 
     return await addToGroup(groupId, client, v2client, sender.address);
   } else if (skill == "exists") {
-    const subscribers = db?.data?.subscribers;
-    const subscriber = subscribers?.find((s) => s.address === sender.address);
-    if (subscriber) {
+    const subscriber = await getRecordByField(
+      "subscribers",
+      "address",
+      sender.address
+    );
+    console.log("Subscriber", subscriber);
+    if (subscriber?.status === "subscribed") {
       return {
         code: 200,
         message: "Address was onboarded",
@@ -106,9 +112,9 @@ export async function handleMembers(
         message: "You are not allowed to send messages",
       };
     }
-    const poapTable = db?.data?.poaps;
+    const poapTable = await getRecords("poaps");
     const claimed = poapTable.filter((poap) => poap.address);
-    const subscribers = db?.data?.subscribers;
+    const subscribers = await getRecords("subscribers");
     const onboarded = subscribers.filter((subscriber) => subscriber.address);
     const subscribed = onboarded.filter(
       (subscriber) => subscriber.status === "subscribed"
@@ -128,13 +134,13 @@ export async function handleMembers(
     }
     const { message } = params;
     console.log("Message", message);
-    /* if (message.length < 100) {
-    console.log("Message is too short", message.length);
+    if (message.length < 100) {
+      console.log("Message is too short", message.length);
       return {
         code: 400,
         message: "Message must be longer than 100 characters",
       };
-    }*/
+    }
     return await sendBroadcast(message, context);
   } else {
     return {

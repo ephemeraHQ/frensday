@@ -80,15 +80,6 @@ export const skills: SkillGroup[] = [
         description: "Get the status of the bot.",
         params: {},
       },
-      {
-        skill: "/exists",
-        adminOnly: true,
-        examples: ["/exists"],
-        handler: handleMembers,
-        triggers: ["/exists"],
-        description: "Check if an address is onboarded.",
-        params: {},
-      },
     ],
   },
   {

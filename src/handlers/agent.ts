@@ -4,8 +4,9 @@ import {
   textGeneration,
   processMultilineResponse,
 } from "@xmtp/message-kit";
+import { checkIfRecordExists } from "../lib/lowdb.js";
 import { system_prompt } from "../prompt.js";
-import { getBotAddress } from "../lib/bots.js";
+import { onboard } from "../lib/utils.js";
 
 export async function agentHandler(context: HandlerContext, name: string) {
   const {
@@ -26,11 +27,9 @@ export async function agentHandler(context: HandlerContext, name: string) {
     let systemPrompt = system_prompt(name, userInfo);
     //Onboarding
     if (name === "earl") {
-      const exists = await context.executeSkill(`/exists`);
-      if (exists?.code == 400) {
-        context?.send(
-          "Hey there! Give me a sec while I fetch info about you first..."
-        );
+      const exists = await checkIfRecordExists("subscribers", sender.address);
+      console.log("exists", exists);
+      if (!exists) {
         return await onboard(
           context,
           userInfo.preferredName ?? "Friend",
@@ -49,47 +48,5 @@ export async function agentHandler(context: HandlerContext, name: string) {
   } catch (error) {
     console.error("Error during OpenAI call:", error);
     //await context.send(messageError);
-  }
-}
-
-async function onboard(
-  context: HandlerContext,
-  name: string,
-  senderAddress: string
-) {
-  try {
-    const groupId = process.env.GROUP_ID;
-    console.warn("ONBOARD Started");
-    const addedToGroup = await context.executeSkill("/add");
-    // Sleep for 30 seconds
-    console.warn("ONBOARD: Added to group", groupId);
-    if (addedToGroup?.code == 200) {
-      //onboard message
-      const subscribed = await context.executeSkill(
-        `/subscribe ${senderAddress}`
-      );
-      console.warn("ONBOARD: Subscribed to updates", senderAddress);
-
-      await context.send(
-        `Welcome ${name}! I'm Earl, and I'm here to assist you with everything frENSday!\n\nJoin us in our event group chat: https://converse.xyz/group/${groupId}\n\nIf you need any information about the event or our speakers, just ask me. I'm always happy to help!`
-      );
-      await context.executeSkill(`/sendbittu ${senderAddress}`);
-      console.warn("ONBOARD: Bittu message sent");
-      setTimeout(() => {
-        context.send(
-          `psst... by the way, check with Bittu https://converse.xyz/dm/${getBotAddress(
-            "bittu"
-          )} for a exclusive POAP 😉`
-        );
-      }, 30000); // 30000 milliseconds = 30 seconds
-      return true;
-    } else {
-      console.warn(addedToGroup?.message ?? "Failed to add to group");
-      context.send(addedToGroup?.message ?? "Failed to add to group");
-      return false;
-    }
-  } catch (error) {
-    console.log("Error adding to group", error);
-    return false;
   }
 }
