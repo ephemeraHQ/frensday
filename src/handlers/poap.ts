@@ -21,6 +21,12 @@ export async function handlePoap(
   const url = `https://converse.xyz/poap/`; // we use this to render the frame
 
   if (skill == "poap") {
+    context.send("No more poaps available");
+    return {
+      code: 400,
+      message: "No more poaps available",
+    };
+    /*
     // Destructure and validate parameters for the ens command
     const { address } = params;
     console.log("address", address);
@@ -35,7 +41,7 @@ export async function handlePoap(
         if (address) poapURL += `?address=${address}`;
         await clearChatHistory(sender.address);
         await context.send(`Here is your POAP`);
-        await updateRecordById("poaps", newPoap.id, { address });
+        await updateRecordById("poaps", newPoap?.id, { address });
         const poap = await getRecordByField("poaps", "address", address);
         // context.send(`POAP updated to ${newPoap?.id} - ${address}`);
         return {
@@ -59,6 +65,7 @@ export async function handlePoap(
         message: `${poapURL}`,
       };
     }
+    */
   } else if (skill == "sendbittu") {
     const conversations = await bittu.conversations.list();
 
