@@ -35,7 +35,6 @@ export async function handlePoap(
         if (address) poapURL += `?address=${address}`;
         await clearChatHistory(sender.address);
         await context.send(`Here is your POAP`);
-        await context.send(newPoap.id);
         await updateRecordById("poaps", newPoap.id, { address });
         const poap = await getRecordByField("poaps", "address", address);
         // context.send(`POAP updated to ${poap?.id} - ${address}`);
