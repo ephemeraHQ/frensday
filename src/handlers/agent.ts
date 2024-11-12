@@ -26,7 +26,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
     let userPrompt = params?.prompt ?? text;
     let systemPrompt = system_prompt(name, userInfo);
     //Onboarding
-    if (name === "earl") {
+    /*if (name === "earl") {
       const exists = await checkIfRecordExists("subscribers", sender.address);
       console.log("exists", exists);
       if (!exists) {
@@ -36,7 +36,7 @@ export async function agentHandler(context: HandlerContext, name: string) {
           sender.address
         );
       }
-    }
+    }*/
 
     const { reply } = await textGeneration(
       `${name}:${sender.address}`,
