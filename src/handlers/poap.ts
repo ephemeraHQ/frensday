@@ -37,7 +37,7 @@ export async function handlePoap(
         await context.send(`Here is your POAP`);
         await updateRecordById("poaps", newPoap.id, { address });
         const poap = await getRecordByField("poaps", "address", address);
-        // context.send(`POAP updated to ${poap?.id} - ${address}`);
+        // context.send(`POAP updated to ${newPoap?.id} - ${address}`);
         return {
           code: 200,
           message: `${poapURL}`,
